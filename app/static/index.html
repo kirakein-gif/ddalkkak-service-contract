@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>딸깍 용역계약</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Malgun Gothic", sans-serif;
+      background: #f5f7fb;
+      color: #17253a;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 48px 24px; }
+    .hero {
+      background: #fff;
+      border: 1px solid #d8e3f4;
+      border-radius: 22px;
+      padding: 40px;
+      box-shadow: 0 12px 36px rgba(23, 37, 58, .06);
+    }
+    .brand {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      color: #2563eb;
+    }
+    h1 { margin: 10px 0 12px; font-size: 38px; letter-spacing: -1.5px; }
+    .desc { margin: 0; color: #52657e; font-size: 17px; line-height: 1.75; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #dde6f2;
+      border-radius: 16px;
+      padding: 22px;
+    }
+    .card b { display: block; margin-bottom: 8px; }
+    .card span { color: #66788f; font-size: 14px; line-height: 1.6; }
+    .start {
+      margin-top: 28px;
+      padding: 24px;
+      border-radius: 16px;
+      background: #eef5ff;
+      border: 1px solid #d6e7ff;
+    }
+    .start h2 { margin: 0 0 10px; font-size: 20px; }
+    .start p { margin: 0; color: #52657e; line-height: 1.7; }
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      h1 { font-size: 30px; }
+    }
+    @media (max-width: 520px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding: 28px 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="brand">DDALKKAK · SERVICE CONTRACT</div>
+      <h1>딸깍 용역계약</h1>
+      <p class="desc">용역 발주부터 계약체결까지, 필요한 절차와 근거 규정을 한 흐름으로 정리하는 지방계약 업무도우미입니다.</p>
+
+      <div class="grid">
+        <div class="card"><b>① 계약조건 입력</b><span>용역종류, 금액, 기간, 지역, 참가자격 등</span></div>
+        <div class="card"><b>② 절차 자동분석</b><span>계약방법, 확인사항, 적용 규정 안내</span></div>
+        <div class="card"><b>③ 나라장터 연결</b><span>공고·개찰·낙찰·계약정보 조회</span></div>
+        <div class="card"><b>④ 문서 자동생성</b><span>품의서, 공고문, 낙찰·계약 관련 서류</span></div>
+      </div>
+
+      <div class="start">
+        <h2>현재 단계 · 프로젝트 골격 구축</h2>
+        <p>다음 단계에서 실제 완료된 용역계약 1건을 기준으로 업무 흐름과 입력값을 확정합니다.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
