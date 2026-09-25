@@ -1,7 +1,100 @@
 {
-  "schema_version": "0.1.0",
-  "effective_date": null,
-  "status": "draft",
-  "rules": [],
-  "note": "실제 용역계약 사례와 현행 지방계약 관련 규정을 검증한 뒤 규칙을 추가합니다."
+  "schema_version": "0.2.0",
+  "effective_from": "2026-07-01",
+  "effective_to": null,
+  "status": "verified_draft",
+  "scope": "학교 일반용역 중 1인 견적 및 2인 이상 견적 수의계약 1차 판정",
+  "amount_basis": "추정가격(부가가치세 제외)",
+  "thresholds": {
+    "standard_one_person_quote_max": 20000000,
+    "special_entity_one_person_quote_max": 50000000,
+    "service_small_value_negotiated_max": 100000000
+  },
+  "quote_rates": {
+    "two_person_service_over_20m": 0.88,
+    "two_person_service_at_or_under_20m": 0.90
+  },
+  "electronic_quote": {
+    "required_for_two_person_quote": true,
+    "default_min_announcement_days": 3,
+    "note": "지정정보처리장치 이용 예외는 별도 검토"
+  },
+  "special_one_person_categories": [
+    "YOUTH_STARTUP",
+    "WOMEN",
+    "DISABLED",
+    "SOCIAL_ENTERPRISE",
+    "SOCIAL_COOP",
+    "SELF_SUPPORT",
+    "VILLAGE_ENTERPRISE"
+  ],
+  "rules": [
+    {
+      "id": "SERVICE-ONE-20M",
+      "when": "estimated_price <= 20000000",
+      "result": "1인 견적 수의계약 가능",
+      "status": "확정",
+      "legal_basis": [
+        "지방계약법 시행령 제25조제1항제5호나목",
+        "지방계약법 시행령 제30조제1항제2호"
+      ]
+    },
+    {
+      "id": "SERVICE-ONE-SPECIAL-50M",
+      "when": "20000000 < estimated_price <= 50000000 AND vendor_category in special_one_person_categories",
+      "result": "특정기업 1인 견적 가능 여부 확인",
+      "status": "조건부",
+      "legal_basis": [
+        "지방계약법 시행령 제25조제1항제5호다목·바목",
+        "지방계약법 시행령 제30조제1항제2호 각 목"
+      ]
+    },
+    {
+      "id": "SERVICE-TWO-100M",
+      "when": "20000000 < estimated_price <= 100000000",
+      "result": "2인 이상 견적제출 수의계약 검토",
+      "status": "조건부",
+      "quote_rate": 0.88,
+      "legal_basis": [
+        "지방계약법 시행령 제25조제1항제5호라목·마목·바목",
+        "지방계약법 시행령 제30조제1항·제2항",
+        "지방자치단체 입찰 및 계약 집행기준 제5장 수의계약 운영요령"
+      ]
+    },
+    {
+      "id": "SERVICE-OVER-100M",
+      "when": "estimated_price > 100000000",
+      "result": "경쟁입찰 등 별도 계약방법 검토",
+      "status": "검토필요",
+      "legal_basis": [
+        "지방계약법 시행령 제25조제1항제5호"
+      ]
+    }
+  ],
+  "mandatory_checks": [
+    "수의계약 배제사유",
+    "공직자의 이해충돌 방지법 제12조상 수의계약 체결 제한",
+    "면허·등록·자격",
+    "분할계약 여부",
+    "지역제한·중소기업 제한 등 참가자격",
+    "학교업무 유형별 별도 지침"
+  ],
+  "sources": [
+    {
+      "name": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "effective": "2026-06-03",
+      "articles": ["제25조", "제30조"]
+    },
+    {
+      "name": "지방자치단체 입찰 및 계약 집행기준",
+      "number": "행정안전부예규 제372호",
+      "effective": "2026-07-01",
+      "chapter": "제5장 수의계약 운영요령"
+    },
+    {
+      "name": "공직자의 이해충돌 방지법",
+      "article": "제12조"
+    }
+  ],
+  "note": "실제 계약 적용 전 학교업무 유형별 특수조건과 충남교육청 지침을 추가 확인한다."
 }
