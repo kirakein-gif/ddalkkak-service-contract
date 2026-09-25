@@ -86,7 +86,7 @@ class RuleResult:
     quote_count_min: int | None = None
     designated_system_required: bool = False
     minimum_quote_rate: float | None = None
-    announcement_days: int | None = None
+    minimum_announcement_days: int | None = None
     small_business_restriction: str = "해당없음"
     reasons: list[str] = field(default_factory=list)
     legal_bases: list[str] = field(default_factory=list)
@@ -242,7 +242,7 @@ def evaluate_contract(data: ContractInput) -> RuleResult:
             quote_count_min=2,
             designated_system_required=True,
             minimum_quote_rate=0.88,
-            announcement_days=3,
+            minimum_announcement_days=3,
             small_business_restriction=small_business,
             reasons=[
                 f"추정가격 {price:,}원은 2천만원 초과 1억원 이하입니다.",
