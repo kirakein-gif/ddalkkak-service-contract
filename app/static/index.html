@@ -5,252 +5,164 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>딸깍 용역계약</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Pretendard", "Malgun Gothic", sans-serif;
-      background: #f4f7fb;
-      color: #17253a;
-    }
-    button, input, select { font: inherit; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 36px 22px 60px; }
-    .hero {
-      background: #fff;
-      border: 1px solid #d8e3f4;
-      border-radius: 22px;
-      padding: 34px;
-      box-shadow: 0 12px 34px rgba(23, 37, 58, .06);
-    }
-    .brand { font-size: 13px; font-weight: 800; letter-spacing: 1.6px; color: #2563eb; }
-    h1 { margin: 8px 0 10px; font-size: 36px; letter-spacing: -1.4px; }
-    .desc { margin: 0; color: #52657e; font-size: 16px; line-height: 1.7; }
-    .version {
-      display: inline-block; margin-top: 15px; padding: 7px 11px; border-radius: 999px;
-      background: #eef5ff; color: #245fbd; font-size: 12px; font-weight: 800;
-    }
-    .panel {
-      margin-top: 20px; background: #fff; border: 1px solid #dde6f2;
-      border-radius: 18px; padding: 26px;
-    }
-    .panel h2 { margin: 0 0 6px; font-size: 21px; }
-    .hint { margin: 0 0 20px; color: #6b7c91; font-size: 14px; line-height: 1.6; }
-    .form-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 14px; }
-    .field { display: flex; flex-direction: column; gap: 7px; }
-    .field label { font-size: 13px; font-weight: 800; color: #43556d; }
-    input, select {
-      width: 100%; border: 1px solid #cfd9e7; border-radius: 11px;
-      padding: 12px 13px; background: #fff; color: #17253a; outline: none;
-    }
-    input:focus, select:focus { border-color: #7eabf5; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-    .checks {
-      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px; margin-top: 16px;
-    }
-    .check {
-      display: flex; align-items: flex-start; gap: 9px; padding: 12px;
-      border: 1px solid #e2e9f2; border-radius: 11px; color: #43556d; font-size: 13px;
-    }
-    .check input { width: auto; margin-top: 2px; }
-    .action {
-      margin-top: 18px; width: 100%; border: 0; border-radius: 12px;
-      background: #2563eb; color: #fff; padding: 14px; font-weight: 800; cursor: pointer;
-    }
-    .action:hover { background: #1d55c1; }
-    .result { display: none; margin-top: 20px; }
-    .result.show { display: block; }
-    .summary {
-      display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
-      border-radius: 15px; padding: 20px; background: #f8fbff; border: 1px solid #d9e9ff;
-    }
-    .summary h3 { margin: 0 0 7px; font-size: 20px; }
-    .summary p { margin: 0; color: #5b6e86; line-height: 1.55; font-size: 14px; }
-    .badge {
-      flex: 0 0 auto; border-radius: 999px; padding: 7px 11px;
-      background: #e7f0ff; color: #205bb7; font-size: 12px; font-weight: 800;
-    }
-    .meta {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px;
-    }
-    .meta-box { padding: 13px; border: 1px solid #e2e9f2; border-radius: 12px; background: #fff; }
-    .meta-box small { display: block; color: #8190a3; margin-bottom: 5px; }
-    .meta-box b { font-size: 14px; }
-    .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-    .section { border: 1px solid #e2e9f2; border-radius: 13px; padding: 16px; background: #fff; }
-    .section h4 { margin: 0 0 10px; font-size: 14px; }
-    .section ul { margin: 0; padding-left: 20px; color: #53677f; font-size: 13px; line-height: 1.7; }
-    .warning { background: #fff9ed; border-color: #f2dfb3; }
-    .error { margin-top: 14px; color: #b42318; font-size: 13px; font-weight: 700; }
-    .footnote { margin-top: 18px; font-size: 12px; color: #8492a4; line-height: 1.6; }
-    @media (max-width: 820px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .checks, .sections { grid-template-columns: 1fr; }
-      .meta { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 520px) {
-      .wrap { padding: 22px 14px 40px; }
-      .hero, .panel { padding: 22px; border-radius: 16px; }
-      h1 { font-size: 29px; }
-      .meta { grid-template-columns: 1fr; }
-    }
+    *{box-sizing:border-box}body{margin:0;font-family:"Pretendard","Malgun Gothic",sans-serif;background:#f4f7fb;color:#17253a}
+    button,input,select{font:inherit}.wrap{max-width:1140px;margin:0 auto;padding:34px 20px 60px}
+    .hero,.panel{background:#fff;border:1px solid #dbe4f0;border-radius:20px;box-shadow:0 10px 30px rgba(23,37,58,.05)}
+    .hero{padding:32px}.panel{margin-top:18px;padding:24px}.brand{font-size:13px;font-weight:800;letter-spacing:1.5px;color:#2563eb}
+    h1{margin:8px 0 10px;font-size:36px;letter-spacing:-1.3px}.desc{margin:0;color:#5d6f86;line-height:1.7}
+    .version{display:inline-block;margin-top:13px;padding:7px 11px;border-radius:999px;background:#edf4ff;color:#245fb7;font-size:12px;font-weight:800}
+    h2{margin:0 0 6px;font-size:21px}.hint{margin:0 0 18px;color:#6d7e92;font-size:14px;line-height:1.6}
+    .mode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .mode button{border:1px solid #d8e2ef;background:#fff;color:#455971;padding:13px;border-radius:12px;font-weight:800;cursor:pointer}
+    .mode button.active{background:#2563eb;border-color:#2563eb;color:#fff}
+    .grid3{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .field{display:flex;flex-direction:column;gap:6px}.field label{font-size:13px;font-weight:800;color:#43566d}
+    input,select{width:100%;border:1px solid #cfd9e6;border-radius:10px;padding:11px 12px;background:#fff;color:#17253a}
+    input:focus,select:focus{outline:0;border-color:#7eaaf1;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+    .checks{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+    .check{display:flex;gap:8px;align-items:flex-start;padding:11px;border:1px solid #e1e8f1;border-radius:10px;font-size:13px;color:#4d6179}
+    .check input{width:auto;margin-top:2px}.hidden{display:none}.action{margin-top:18px;width:100%;border:0;border-radius:11px;background:#2563eb;color:#fff;padding:14px;font-weight:800;cursor:pointer}
+    .error{margin-top:12px;color:#b42318;font-weight:700;font-size:13px}.result{display:none;margin-top:18px}.result.show{display:block}
+    .summary{display:flex;justify-content:space-between;gap:12px;padding:18px;border-radius:14px;background:#f8fbff;border:1px solid #d8e8ff}
+    .summary h3{margin:0 0 6px;font-size:20px}.summary p{margin:0;color:#62748b;font-size:13px}.badge{height:max-content;padding:7px 10px;border-radius:999px;background:#e7f0ff;color:#205bb7;font-size:12px;font-weight:800}
+    .meta{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-top:10px}.meta-box{padding:12px;border:1px solid #e1e8f1;border-radius:11px;background:#fff}
+    .meta-box small{display:block;color:#8190a3;margin-bottom:4px}.meta-box b{font-size:13px}.sections{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .section{padding:15px;border:1px solid #e1e8f1;border-radius:12px;background:#fff}.section h4{margin:0 0 8px;font-size:14px}.section ul{margin:0;padding-left:18px;color:#556980;font-size:13px;line-height:1.7}
+    .warning{background:#fff9ee;border-color:#f1deb0}.transport-extra{margin-top:16px;padding-top:16px;border-top:1px dashed #dce5ef}
+    .foot{margin-top:14px;font-size:12px;color:#8492a4;line-height:1.6}
+    @media(max-width:900px){.grid3,.grid2,.sections{grid-template-columns:1fr}.meta{grid-template-columns:1fr 1fr 1fr}.checks{grid-template-columns:1fr}}
+    @media(max-width:560px){.wrap{padding:20px 12px 40px}.hero,.panel{padding:20px;border-radius:15px}h1{font-size:29px}.mode,.meta{grid-template-columns:1fr 1fr}}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <section class="hero">
-      <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
-      <h1>딸깍 용역계약</h1>
-      <p class="desc">학교에서 자주 처리하는 용역의 계약방법을 현행 지방계약 기준에 따라 단계적으로 검토합니다.</p>
-      <span class="version">v0.2 · 수의계약 1차 Rule Engine</span>
-    </section>
+<main class="wrap">
+  <section class="hero">
+    <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
+    <h1>딸깍 용역계약</h1>
+    <p class="desc">학교 용역의 유형·금액·자격·안전조건을 나누어 계약 경로와 확인사항을 제시합니다.</p>
+    <span class="version">v0.3 · 통학차량 전용 Rule Engine 추가</span>
+  </section>
 
-    <section class="panel">
-      <h2>계약방법 1차 분석</h2>
-      <p class="hint">현재는 학교 일반용역의 1인 견적·2인 이상 견적 구간을 우선 지원합니다. 금액은 부가가치세를 제외한 <b>추정가격</b>을 입력하세요.</p>
+  <section class="panel">
+    <h2>계약방법 분석</h2>
+    <p class="hint">금액은 부가가치세를 제외한 <b>추정가격</b>을 입력하세요. 통학차량은 차량·학생·안전조건을 함께 검토합니다.</p>
 
-      <div class="form-grid">
-        <div class="field">
-          <label for="serviceName">용역명</label>
-          <input id="serviceName" value="학교 시설 유지관리 용역">
-        </div>
-        <div class="field">
-          <label for="estimatedPrice">추정가격(원)</label>
-          <input id="estimatedPrice" type="number" min="1" value="30000000">
-        </div>
-        <div class="field">
-          <label for="plannedDate">공고·계약 예정일</label>
-          <input id="plannedDate" type="date" value="2026-09-25">
-        </div>
-      </div>
+    <div class="mode">
+      <button id="generalMode" class="active" type="button">일반 학교용역</button>
+      <button id="transportMode" type="button">통학차량·통학버스</button>
+    </div>
 
-      <div class="form-grid" style="margin-top:14px;grid-template-columns:1fr 2fr;">
+    <div class="grid3">
+      <div class="field"><label for="serviceName">용역명</label><input id="serviceName" value="학교 시설 유지관리 용역"></div>
+      <div class="field"><label for="estimatedPrice">추정가격(원)</label><input id="estimatedPrice" type="number" min="1" value="30000000"></div>
+      <div class="field"><label for="plannedDate">공고·계약 예정일</label><input id="plannedDate" type="date" value="2026-09-25"></div>
+    </div>
+
+    <div id="generalFields">
+      <div class="grid2">
         <div class="field">
           <label for="vendorCategory">계약상대자 특별유형</label>
           <select id="vendorCategory">
-            <option value="NONE">해당 없음</option>
-            <option value="YOUTH_STARTUP">청년창업기업</option>
-            <option value="WOMEN">여성기업</option>
-            <option value="DISABLED">장애인기업</option>
-            <option value="SOCIAL_ENTERPRISE">사회적기업</option>
-            <option value="SOCIAL_COOP">사회적협동조합</option>
-            <option value="SELF_SUPPORT">자활기업</option>
-            <option value="VILLAGE_ENTERPRISE">마을기업</option>
+            <option value="NONE">해당 없음</option><option value="YOUTH_STARTUP">청년창업기업</option>
+            <option value="WOMEN">여성기업</option><option value="DISABLED">장애인기업</option>
+            <option value="SOCIAL_ENTERPRISE">사회적기업</option><option value="SOCIAL_COOP">사회적협동조합</option>
+            <option value="SELF_SUPPORT">자활기업</option><option value="VILLAGE_ENTERPRISE">마을기업</option>
           </select>
         </div>
         <div class="field">
           <label>추가 특성</label>
           <div class="checks">
-            <label class="check"><input id="specialKnowledge" type="checkbox"> 특수한 지식·기술·자격을 요구하는 용역</label>
-            <label class="check"><input id="technicalService" type="checkbox"> 설계·감리·PQ 등 기술용역</label>
-            <label class="check"><input id="proposalEvaluation" type="checkbox"> 제안서·규격 평가가 필요한 용역</label>
-            <label class="check"><input id="specialConfirmed" type="checkbox"> 특별기업의 추가 법정요건 확인 완료</label>
+            <label class="check"><input id="specialKnowledge" type="checkbox">특수한 지식·기술·자격 요구</label>
+            <label class="check"><input id="technicalService" type="checkbox">설계·감리·PQ 등 기술용역</label>
+            <label class="check"><input id="proposalEvaluation" type="checkbox">제안서·규격 평가 필요</label>
+            <label class="check"><input id="specialConfirmed" type="checkbox">특별기업 추가요건 확인 완료</label>
           </div>
         </div>
       </div>
+    </div>
 
-      <button class="action" id="evaluateBtn">계약방법 분석</button>
-      <div id="error" class="error"></div>
-
-      <div id="result" class="result">
-        <div class="summary">
-          <div>
-            <h3 id="method"></h3>
-            <p id="routeText"></p>
-          </div>
-          <span id="status" class="badge"></span>
+    <div id="transportFields" class="hidden transport-extra">
+      <div class="grid3">
+        <div class="field">
+          <label for="passengerGroup">주요 운송대상</label>
+          <select id="passengerGroup">
+            <option value="KINDERGARTEN">유치원</option><option value="ELEMENTARY" selected>초등학교</option>
+            <option value="MIDDLE">중학교</option><option value="HIGH">고등학교</option>
+            <option value="SPECIAL_MIXED">특수학교·연령혼합</option><option value="MIXED">여러 학교급 혼합</option>
+          </select>
         </div>
-
-        <div class="meta">
-          <div class="meta-box"><small>최소 견적자</small><b id="quoteCount">-</b></div>
-          <div class="meta-box"><small>지정정보처리장치</small><b id="designated">-</b></div>
-          <div class="meta-box"><small>견적가격 기준</small><b id="quoteRate">-</b></div>
-          <div class="meta-box"><small>소기업·소상공인</small><b id="smallBusiness">-</b></div>
-        </div>
-
-        <div class="sections">
-          <div class="section">
-            <h4>판정 이유</h4>
-            <ul id="reasons"></ul>
-          </div>
-          <div class="section">
-            <h4>법적 근거</h4>
-            <ul id="legalBases"></ul>
-          </div>
-          <div class="section">
-            <h4>담당자 확인사항</h4>
-            <ul id="checks"></ul>
-          </div>
-          <div class="section warning">
-            <h4>주의사항</h4>
-            <ul id="warnings"></ul>
-          </div>
-        </div>
-
-        <p class="footnote">※ 현재 v0.2는 법령상 기계판정 가능한 기초구간을 구현한 개발 버전입니다. 학교업무 유형별 교육청 지침과 특수조건은 후속 규칙으로 추가합니다.</p>
+        <div class="field"><label for="vehicleCount">차량 대수</label><input id="vehicleCount" type="number" min="1" value="1"></div>
+        <div class="field"><label for="seatCapacity">최소 승차정원</label><input id="seatCapacity" type="number" min="1" value="45"></div>
       </div>
-    </section>
-  </main>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field">
+          <label for="pricingMethod">계약금액 방식</label>
+          <select id="pricingMethod"><option value="TOTAL">총액계약</option><option value="UNIT">단가계약</option></select>
+        </div>
+        <div class="field"><label for="operationDays">예정 운행일수</label><input id="operationDays" type="number" min="1" max="366" value="190"></div>
+        <div class="field"><label>입찰·운행 조건</label>
+          <div class="checks" style="margin-top:0">
+            <label class="check"><input id="driverIncluded" type="checkbox" checked>운전원 포함</label>
+            <label class="check"><input id="attendantIncluded" type="checkbox" checked>동승보호자 포함</label>
+            <label class="check"><input id="regionalRestriction" type="checkbox" checked>지역제한 검토</label>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <script>
-    const $ = (id) => document.getElementById(id);
+    <button class="action" id="evaluateBtn">계약방법 분석</button>
+    <div id="error" class="error"></div>
 
-    function fillList(id, values, emptyText) {
-      const el = $(id);
-      el.innerHTML = "";
-      const list = (values && values.length) ? values : [emptyText];
-      for (const value of list) {
-        const li = document.createElement("li");
-        li.textContent = value;
-        el.appendChild(li);
-      }
-    }
+    <div id="result" class="result">
+      <div class="summary">
+        <div><h3 id="method"></h3><p id="routeText"></p></div><span id="status" class="badge"></span>
+      </div>
+      <div class="meta">
+        <div class="meta-box"><small>전자조달</small><b id="designated">-</b></div>
+        <div class="meta-box"><small>낙찰·견적 기준</small><b id="quoteRate">-</b></div>
+        <div class="meta-box"><small>적격심사</small><b id="qualification">-</b></div>
+        <div class="meta-box"><small>어린이통학버스</small><b id="childBus">-</b></div>
+        <div class="meta-box"><small>운송사업 등록</small><b id="industry">-</b></div>
+        <div class="meta-box"><small>지역제한</small><b id="regionRule">-</b></div>
+      </div>
+      <div class="sections">
+        <div class="section"><h4>판정 이유</h4><ul id="reasons"></ul></div>
+        <div class="section"><h4>법적 근거</h4><ul id="legalBases"></ul></div>
+        <div class="section"><h4>담당자 확인사항</h4><ul id="checks"></ul></div>
+        <div class="section warning"><h4>주의사항</h4><ul id="warnings"></ul></div>
+        <div id="documentsBox" class="section hidden"><h4>준비·확인 서류</h4><ul id="documents"></ul></div>
+        <div id="conditionsBox" class="section hidden"><h4>학교 특수조건 후보</h4><ul id="conditions"></ul></div>
+      </div>
+      <p class="foot">※ 자동판정은 법령상 기계판정 가능한 범위를 우선 구현한 개발 버전입니다. 학교별 지침·특수조건 및 공고일 기준 최신 규정은 최종 확인이 필요합니다.</p>
+    </div>
+  </section>
+</main>
 
-    $("evaluateBtn").addEventListener("click", async () => {
-      $("error").textContent = "";
-      $("result").classList.remove("show");
-
-      const body = {
-        service_name: $("serviceName").value.trim(),
-        estimated_price: Number($("estimatedPrice").value),
-        planned_date: $("plannedDate").value,
-        vendor_category: $("vendorCategory").value,
-        special_entity_requirements_confirmed: $("specialConfirmed").checked,
-        special_knowledge_or_qualification: $("specialKnowledge").checked,
-        technical_service: $("technicalService").checked,
-        requires_proposal_evaluation: $("proposalEvaluation").checked
-      };
-
-      if (!body.service_name || !body.estimated_price || !body.planned_date) {
-        $("error").textContent = "용역명, 추정가격, 예정일을 입력해 주세요.";
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/evaluate", {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(body)
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.detail ? JSON.stringify(data.detail) : "분석에 실패했습니다.");
-
-        $("method").textContent = data.contract_method;
-        $("routeText").textContent = "판정코드 · " + data.route_code;
-        $("status").textContent = data.status;
-        $("quoteCount").textContent = data.quote_count_min ? data.quote_count_min + "인 이상" : "별도 검토";
-        $("designated").textContent = data.designated_system_required ? "원칙적 사용" : "필수 아님";
-        $("quoteRate").textContent = data.minimum_quote_rate ? Math.round(data.minimum_quote_rate * 1000) / 10 + "% 이상" : "해당 없음";
-        $("smallBusiness").textContent = data.small_business_restriction || "해당 없음";
-
-        fillList("reasons", data.reasons, "별도 판정 이유 없음");
-        fillList("legalBases", data.legal_bases, "추가 근거 확인 필요");
-        fillList("checks", data.required_checks, "추가 확인사항 없음");
-        fillList("warnings", data.warnings, "현재 별도 경고 없음");
-
-        $("result").classList.add("show");
-      } catch (error) {
-        $("error").textContent = "오류: " + error.message;
-      }
-    });
-  </script>
+<script>
+const $=id=>document.getElementById(id);let mode="general";
+function setMode(next){mode=next;$("generalMode").classList.toggle("active",next==="general");$("transportMode").classList.toggle("active",next==="transport");$("generalFields").classList.toggle("hidden",next!=="general");$("transportFields").classList.toggle("hidden",next!=="transport");if(next==="transport"){$("serviceName").value="2027학년도 통학차량 임차용역";$("estimatedPrice").value="45000000"}else{$("serviceName").value="학교 시설 유지관리 용역";$("estimatedPrice").value="30000000"}}
+$("generalMode").onclick=()=>setMode("general");$("transportMode").onclick=()=>setMode("transport");
+function fillList(id,values,empty){const el=$(id);el.innerHTML="";for(const v of(values&&values.length?values:[empty])){const li=document.createElement("li");li.textContent=v;el.appendChild(li)}}
+function pct(v){if(!v)return"해당 없음";return(Math.round(v*100000)/1000)+"% 이상"}
+$("evaluateBtn").onclick=async()=>{
+  $("error").textContent="";$("result").classList.remove("show");
+  let endpoint="/api/evaluate",body={service_name:$("serviceName").value.trim(),estimated_price:Number($("estimatedPrice").value),planned_date:$("plannedDate").value};
+  if(!body.service_name||!body.estimated_price||!body.planned_date){$("error").textContent="용역명, 추정가격, 예정일을 입력해 주세요.";return}
+  if(mode==="general"){Object.assign(body,{vendor_category:$("vendorCategory").value,special_entity_requirements_confirmed:$("specialConfirmed").checked,special_knowledge_or_qualification:$("specialKnowledge").checked,technical_service:$("technicalService").checked,requires_proposal_evaluation:$("proposalEvaluation").checked})}
+  else{endpoint="/api/evaluate/transport";Object.assign(body,{passenger_group:$("passengerGroup").value,vehicle_count:Number($("vehicleCount").value),seat_capacity_min:Number($("seatCapacity").value),pricing_method:$("pricingMethod").value,operation_days:Number($("operationDays").value)||null,driver_included:$("driverIncluded").checked,attendant_included:$("attendantIncluded").checked,regional_restriction_requested:$("regionalRestriction").checked})}
+  try{
+    const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const data=await res.json();
+    if(!res.ok)throw new Error(data.detail?JSON.stringify(data.detail):"분석 실패");
+    $("method").textContent=data.contract_method;$("routeText").textContent="판정코드 · "+data.route_code;$("status").textContent=data.status;
+    $("designated").textContent=data.designated_system_required?"원칙적 사용":"필수 아님";$("quoteRate").textContent=pct(data.minimum_quote_rate);
+    $("qualification").textContent=data.qualification_score?data.qualification_score+"점 이상":"해당/별도 검토";$("childBus").textContent=data.child_school_bus_status||"해당 없음";
+    $("industry").textContent=data.required_industry_registration||"업무유형별 확인";$("regionRule").textContent=data.regional_restriction_status||data.small_business_restriction||"별도 확인";
+    fillList("reasons",data.reasons,"별도 판정 이유 없음");fillList("legalBases",data.legal_bases,"추가 근거 확인 필요");fillList("checks",data.required_checks,"추가 확인사항 없음");fillList("warnings",data.warnings,"현재 별도 경고 없음");
+    const hasDocs=data.required_documents&&data.required_documents.length;$("documentsBox").classList.toggle("hidden",!hasDocs);if(hasDocs)fillList("documents",data.required_documents,"");
+    const hasCon=data.common_school_conditions&&data.common_school_conditions.length;$("conditionsBox").classList.toggle("hidden",!hasCon);if(hasCon)fillList("conditions",data.common_school_conditions,"");
+    $("result").classList.add("show");
+  }catch(e){$("error").textContent="오류: "+e.message}
+};
+</script>
 </body>
 </html>
