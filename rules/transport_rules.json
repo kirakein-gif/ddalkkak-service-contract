@@ -1,0 +1,64 @@
+{
+  "schema_version": "0.1.0",
+  "effective_from": "2026-07-27",
+  "effective_to": null,
+  "status": "verified_draft",
+  "scope": "학교 통학차량·통학버스 임차용역",
+  "industry_registration": {
+    "required": "여객자동차운송사업(전세버스)",
+    "legal_basis": [
+      "여객자동차 운수사업법 시행령 제3조",
+      "여객자동차 운수사업법 시행령 제4조"
+    ]
+  },
+  "amount_routes": [
+    {
+      "max_estimated_price": 100000000,
+      "route": "기존 수의계약 Rule Engine 적용 + 통학차량 안전요건"
+    },
+    {
+      "min_estimated_price_exclusive": 100000000,
+      "max_estimated_price_exclusive": 500000000,
+      "route": "경쟁입찰 + 여객 육상운송용역 적격심사 검토",
+      "minimum_quote_rate": 0.87995,
+      "qualification_pass_score": 88,
+      "standard": "조달청 일반용역 적격심사 세부기준 [별표 5] 여객 육상운송용역 적격심사(추정가격 5억원 미만)"
+    },
+    {
+      "min_estimated_price": 500000000,
+      "route": "5억원 이상 적격심사·국제입찰·지역제한 별도 검토"
+    }
+  ],
+  "child_school_bus": {
+    "definition_age": "13세 미만",
+    "kindergarten": "적용 확인",
+    "elementary": "적용 확인",
+    "middle": "통상 비대상이나 실제 연령·운송대상 확인",
+    "high": "통상 비대상",
+    "special_or_mixed": "13세 미만 운송 차량별 검토",
+    "legal_basis": [
+      "도로교통법 제2조제23호",
+      "도로교통법 제52조",
+      "도로교통법 제53조",
+      "도로교통법 제53조의3"
+    ]
+  },
+  "vehicle_checks": [
+    "여객자동차 운수사업법령상 차령",
+    "차량 소유·사용관계",
+    "책임보험·종합보험",
+    "정기검사·임시검사",
+    "학교 특수조건의 차량연식·주행거리",
+    "고정배차 및 대체차량",
+    "냉난방·안전띠 등 안전설비"
+  ],
+  "common_school_sample_conditions": [
+    "회사 직영차량 또는 지입차량 금지 조건",
+    "운전원 포함",
+    "어린이통학버스 해당 시 동승보호자",
+    "운행노선표·운행시간표",
+    "시험운행",
+    "고장·사고 시 대체차량"
+  ],
+  "note": "직영차량, 특정 연식, 특정 주행거리 등은 학교 공고에서 빈번하지만 법정 공통요건으로 단정하지 않고 특수조건 설계 항목으로 관리한다."
+}
