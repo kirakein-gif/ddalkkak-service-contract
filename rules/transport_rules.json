@@ -1,9 +1,10 @@
 {
-  "schema_version": "0.1.0",
+  "schema_version": "0.2.0",
   "effective_from": "2026-07-27",
   "effective_to": null,
   "status": "verified_draft",
   "scope": "학교 통학차량·통학버스 임차용역",
+  "change_note": "2026-07-27 조달청공고 제2026-390호 반영: 중소기업자간 경쟁 여객육상운송용역 낙찰하한율 89.995%",
   "industry_registration": {
     "required": "여객자동차운송사업(전세버스)",
     "legal_basis": [
@@ -11,18 +12,40 @@
       "여객자동차 운수사업법 시행령 제4조"
     ]
   },
+  "service_items": [
+    {
+      "code": "7811189902",
+      "name": "통학운송서비스",
+      "sme_competition_product": true
+    },
+    {
+      "code": "7811189904",
+      "name": "기타도로여객운송서비스",
+      "sme_competition_product": true
+    }
+  ],
+  "direct_production": {
+    "threshold": 10000000,
+    "amount_basis": "추정가격",
+    "rule": "중소기업자간 경쟁제품을 지방계약법 시행령 제25조제1항제5호 등에 따른 수의계약으로 체결하는 경우 추정가격 1천만원 이상 직접생산 여부 확인",
+    "legal_basis": [
+      "중소기업제품 구매촉진 및 판로지원에 관한 법률 제9조",
+      "같은 법 시행령 제10조"
+    ]
+  },
   "amount_routes": [
     {
       "max_estimated_price": 100000000,
-      "route": "기존 수의계약 Rule Engine 적용 + 통학차량 안전요건"
+      "route": "기존 수의계약 Rule Engine 적용 + 통학차량/중소기업제품/안전요건",
+      "note": "경쟁입찰을 선택할 수도 있으므로 금액만으로 수의계약을 의무화하지 않음"
     },
     {
       "min_estimated_price_exclusive": 100000000,
       "max_estimated_price_exclusive": 500000000,
       "route": "경쟁입찰 + 여객 육상운송용역 적격심사 검토",
-      "minimum_quote_rate": 0.87995,
+      "sme_competition_minimum_rate": 0.89995,
       "qualification_pass_score": 88,
-      "standard": "조달청 일반용역 적격심사 세부기준 [별표 5] 여객 육상운송용역 적격심사(추정가격 5억원 미만)"
+      "standard": "조달청 일반용역 적격심사 세부기준 [별표 5]"
     },
     {
       "min_estimated_price": 500000000,
@@ -60,5 +83,5 @@
     "시험운행",
     "고장·사고 시 대체차량"
   ],
-  "note": "직영차량, 특정 연식, 특정 주행거리 등은 학교 공고에서 빈번하지만 법정 공통요건으로 단정하지 않고 특수조건 설계 항목으로 관리한다."
+  "note": "세부품명·중기간 경쟁제품 지정 여부는 공고 시점 SMPP 최신 목록을 재확인한다. 직영차량·특정 연식·특정 주행거리 등은 학교 선택 특수조건으로 관리한다."
 }
