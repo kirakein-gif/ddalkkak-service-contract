@@ -17,6 +17,7 @@ from app.rules.transport import (
     PassengerGroup,
     PricingMethod,
     TransportInput,
+    TransportServiceItem,
     evaluate_transport,
 )
 
@@ -50,6 +51,7 @@ class TransportEvaluateRequest(BaseModel):
     passenger_group: PassengerGroup
     vehicle_count: int = Field(gt=0, le=100)
     seat_capacity_min: int = Field(gt=0, le=100)
+    service_item: TransportServiceItem = TransportServiceItem.SCHOOL_TRANSPORT
     pricing_method: PricingMethod = PricingMethod.TOTAL
     operation_days: int | None = Field(default=None, gt=0, le=366)
     driver_included: bool = True
@@ -93,6 +95,7 @@ def evaluate_school_transport(request: TransportEvaluateRequest) -> dict:
             passenger_group=request.passenger_group,
             vehicle_count=request.vehicle_count,
             seat_capacity_min=request.seat_capacity_min,
+            service_item=request.service_item,
             pricing_method=request.pricing_method,
             operation_days=request.operation_days,
             driver_included=request.driver_included,
