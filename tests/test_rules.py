@@ -27,7 +27,7 @@ def test_two_person_quote_over_20m() -> None:
     assert result.route_code == RouteCode.TWO_PERSON_E_QUOTE
     assert result.minimum_quote_rate == 0.88
     assert result.designated_system_required is True
-    assert result.announcement_days == 3
+    assert result.minimum_announcement_days == 3
 
 
 def test_special_entity_one_person_quote_at_50m() -> None:
