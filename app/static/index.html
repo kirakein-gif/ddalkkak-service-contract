@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
     <h1>딸깍 용역계약</h1>
     <p class="desc">학교 용역의 계약방법을 검토하고, 통학차량은 공고문·과업지시서·특수조건·운행노선표까지 자동 생성합니다.</p>
-    <span class="version">v0.6 · HWPX 출력 · 나라장터 공고 불러오기</span>
+    <span class="version">v0.8 · 용역 · 물품 · 공사 HWPX</span>
   </section>
 
   <section class="panel">
@@ -168,9 +168,11 @@
       <div id="g2bSummary" class="hint" style="margin-top:8px;margin-bottom:0"></div>
     </div>
 
-    <div class="mode">
-      <button id="generalMode" class="active" type="button">일반 학교용역</button>
-      <button id="transportMode" type="button">통학차량·통학버스</button>
+    <div class="mode" style="grid-template-columns:repeat(4,1fr)">
+      <button id="generalMode" class="active" type="button">일반 용역</button>
+      <button id="transportMode" type="button">통학차량</button>
+      <button id="goodsMode" type="button">물품</button>
+      <button id="worksMode" type="button">공사</button>
     </div>
 
     <div class="grid3">
@@ -241,6 +243,52 @@
         <label class="check"><input id="driverIncluded" type="checkbox" checked>운전원 포함</label>
         <label class="check"><input id="attendantIncluded" type="checkbox" checked>동승보호자 포함</label>
         <label class="check"><input id="regionalRestriction" type="checkbox" checked>지역제한 검토</label>
+      </div>
+    </div>
+
+
+    <div id="goodsFields" class="subpanel hidden">
+      <div class="grid3">
+        <div class="field"><label for="goodsSchoolName">학교명</label><input id="goodsSchoolName" value="○○초등학교"></div>
+        <div class="field"><label for="goodsDeliveryDate">납품기한</label><input id="goodsDeliveryDate" type="date" value="2027-03-15"></div>
+        <div class="field"><label for="goodsBaseAmount">기초금액(원)</label><input id="goodsBaseAmount" type="number" min="1"></div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsQuantity">수량</label><input id="goodsQuantity" placeholder="예: A4 복사용지 500박스"></div>
+        <div class="field"><label for="goodsDeliveryPlace">납품장소</label><input id="goodsDeliveryPlace" value="학교 지정장소"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="goodsSpec">세부규격</label><textarea id="goodsSpec" placeholder="규격, 재질, 성능, 인증조건 등"></textarea></div>
+      <div class="field" style="margin-top:12px"><label for="goodsWarranty">하자·A/S 조건</label><textarea id="goodsWarranty" placeholder="하자보증기간, A/S, 교환조건 등"></textarea></div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="goodsSmeProduct" type="checkbox">중소기업자간 경쟁제품</label>
+        <label class="check"><input id="goodsDirectProduction" type="checkbox">직접생산확인 대상</label>
+        <label class="check"><input id="goodsPublication" type="checkbox">간행물 구매</label>
+        <label class="check"><input id="goodsUnitPrice" type="checkbox">단가계약</label>
+      </div>
+    </div>
+
+    <div id="worksFields" class="subpanel hidden">
+      <div class="grid3">
+        <div class="field"><label for="worksSchoolName">학교명</label><input id="worksSchoolName" value="○○초등학교"></div>
+        <div class="field">
+          <label for="worksType">공사종류</label>
+          <select id="worksType">
+            <option value="GENERAL">종합공사</option>
+            <option value="SPECIALIZED" selected>전문공사</option>
+            <option value="OTHER">전기·통신·소방 등 기타공사</option>
+          </select>
+        </div>
+        <div class="field"><label for="worksBaseAmount">기초금액(원)</label><input id="worksBaseAmount" type="number" min="1"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksLocation">공사위치</label><input id="worksLocation" placeholder="예: 본관 2층 교실"></div>
+        <div class="field"><label for="worksDays">공사기간(일)</label><input id="worksDays" type="number" min="1" value="30"></div>
+        <div class="field"><label for="worksIndustry">요구 업종·주력분야</label><input id="worksIndustry" placeholder="예: 실내건축공사업"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="worksScope">공사범위</label><textarea id="worksScope" placeholder="철거, 바닥 교체, 마감 등"></textarea></div>
+      <div class="field" style="margin-top:12px"><label for="worksDesign">설계·내역 요약</label><textarea id="worksDesign" placeholder="설계서 및 내역의 주요내용"></textarea></div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="worksRegion" type="checkbox" checked>지역제한 검토</label>
       </div>
     </div>
 
@@ -485,12 +533,17 @@ function setMode(next) {
   mode = next;
   $("generalMode").classList.toggle("active", next === "general");
   $("transportMode").classList.toggle("active", next === "transport");
+  $("goodsMode").classList.toggle("active", next === "goods");
+  $("worksMode").classList.toggle("active", next === "works");
   $("generalFields").classList.toggle("hidden", next !== "general");
   $("transportFields").classList.toggle("hidden", next !== "transport");
+  $("goodsFields").classList.toggle("hidden", next !== "goods");
+  $("worksFields").classList.toggle("hidden", next !== "works");
   $("documentPanel").classList.toggle("hidden", next !== "transport");
   $("qualificationPanel").classList.toggle("hidden", next !== "transport");
-  $("previewBtn").classList.toggle("hidden", next !== "transport");
-  $("downloadBtn").classList.toggle("hidden", next !== "transport");
+  const hasDocuments = ["transport","goods","works"].includes(next);
+  $("previewBtn").classList.toggle("hidden", !hasDocuments);
+  $("downloadBtn").classList.toggle("hidden", !hasDocuments);
   $("docxDownloadBtn").classList.toggle("hidden", next !== "transport");
   $("previewPanel").classList.add("hidden");
   $("statusNote").textContent = "";
@@ -501,6 +554,12 @@ function setMode(next) {
       addRoute("등교");
       addRoute("하교");
     }
+  } else if (next === "goods") {
+    $("serviceName").value = "복사용지 구매";
+    $("estimatedPrice").value = "30000000";
+  } else if (next === "works") {
+    $("serviceName").value = "교실 바닥 교체공사";
+    $("estimatedPrice").value = "80000000";
   } else {
     $("serviceName").value = "학교 시설 유지관리 용역";
     $("estimatedPrice").value = "30000000";
@@ -509,6 +568,8 @@ function setMode(next) {
 
 $("generalMode").onclick = () => setMode("general");
 $("transportMode").onclick = () => setMode("transport");
+$("goodsMode").onclick = () => setMode("goods");
+$("worksMode").onclick = () => setMode("works");
 
 function addRoute(direction = "등교") {
   routeCounter += 1;
@@ -598,6 +659,45 @@ function collectDocumentRequest() {
   };
 }
 
+
+function collectGoods() {
+  return {
+    school_name: $("goodsSchoolName").value.trim() || "○○학교",
+    item_name: $("serviceName").value.trim(),
+    estimated_price: Number($("estimatedPrice").value),
+    planned_date: $("plannedDate").value,
+    base_amount: optionalNumber("goodsBaseAmount"),
+    delivery_date: $("goodsDeliveryDate").value,
+    quantity_text: $("goodsQuantity").value.trim() || "[수량 입력 필요]",
+    specification_text: $("goodsSpec").value.trim() || "[규격 입력 필요]",
+    delivery_place: $("goodsDeliveryPlace").value.trim() || "학교 지정장소",
+    warranty_text: $("goodsWarranty").value.trim() || "[하자·A/S 조건 입력 필요]",
+    inspection_text: "납품 후 규격·수량·품질 검사",
+    is_sme_competition_product: $("goodsSmeProduct").checked,
+    direct_production_applicable: $("goodsDirectProduction").checked,
+    is_publication: $("goodsPublication").checked,
+    unit_price_contract: $("goodsUnitPrice").checked
+  };
+}
+
+function collectWorks() {
+  return {
+    school_name: $("worksSchoolName").value.trim() || "○○학교",
+    work_name: $("serviceName").value.trim(),
+    estimated_price: Number($("estimatedPrice").value),
+    works_type: $("worksType").value,
+    planned_date: $("plannedDate").value,
+    base_amount: optionalNumber("worksBaseAmount"),
+    location: $("worksLocation").value.trim() || "[공사위치 입력 필요]",
+    completion_days: Number($("worksDays").value) || 30,
+    scope_text: $("worksScope").value.trim() || "[공사범위 입력 필요]",
+    required_industry: $("worksIndustry").value.trim(),
+    design_summary: $("worksDesign").value.trim() || "[설계·내역 요약 입력 필요]",
+    safety_text: "산업안전보건법 등 관계법령에 따른 안전조치",
+    region_restriction_requested: $("worksRegion").checked
+  };
+}
+
 function fillList(id, values, emptyText) {
   const el = $(id);
   el.innerHTML = "";
@@ -668,9 +768,15 @@ $("evaluateBtn").onclick = async () => {
         requires_proposal_evaluation: $("proposalEvaluation").checked
       };
       endpoint = "/api/evaluate";
-    } else {
+    } else if (mode === "transport") {
       body = collectTransport();
       endpoint = "/api/evaluate/transport";
+    } else if (mode === "goods") {
+      body = collectGoods();
+      endpoint = "/api/evaluate/goods";
+    } else {
+      body = collectWorks();
+      endpoint = "/api/evaluate/works";
     }
     if (!body.service_name || !body.estimated_price || !body.planned_date) {
       throw new Error("용역명, 추정가격, 예정일을 입력해 주세요.");
@@ -686,8 +792,19 @@ $("previewBtn").onclick = async () => {
   $("error").textContent = "";
   $("statusNote").textContent = "문서를 생성하고 있습니다.";
   try {
-    const data = await postJson("/api/documents/transport/preview", collectDocumentRequest());
-    renderRule(data.rule);
+    let previewEndpoint, previewBody;
+    if (mode === "transport") {
+      previewEndpoint = "/api/documents/transport/preview";
+      previewBody = collectDocumentRequest();
+    } else if (mode === "goods") {
+      previewEndpoint = "/api/documents/goods/preview";
+      previewBody = collectGoods();
+    } else {
+      previewEndpoint = "/api/documents/works/preview";
+      previewBody = collectWorks();
+    }
+    const data = await postJson(previewEndpoint, previewBody);
+    if (data.rule) renderRule(data.rule);
     $("previewDocs").innerHTML = "";
     for (const doc of data.documents) {
       const card = document.createElement("div");
@@ -742,10 +859,24 @@ $("downloadBtn").onclick = async () => {
   $("error").textContent = "";
   $("statusNote").textContent = "HWPX 문서 묶음을 생성하고 있습니다.";
   try {
-    const response = await fetch("/api/documents/transport/package-hwpx", {
+    let packageEndpoint, packageBody, packageName;
+    if (mode === "transport") {
+      packageEndpoint = "/api/documents/transport/package-hwpx";
+      packageBody = collectDocumentRequest();
+      packageName = "ddalkkak_transport_hwpx.zip";
+    } else if (mode === "goods") {
+      packageEndpoint = "/api/documents/goods/package-hwpx";
+      packageBody = collectGoods();
+      packageName = "ddalkkak_goods_hwpx.zip";
+    } else {
+      packageEndpoint = "/api/documents/works/package-hwpx";
+      packageBody = collectWorks();
+      packageName = "ddalkkak_works_hwpx.zip";
+    }
+    const response = await fetch(packageEndpoint, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(collectDocumentRequest())
+      body: JSON.stringify(packageBody)
     });
     if (!response.ok) {
       const data = await response.json();
@@ -755,7 +886,7 @@ $("downloadBtn").onclick = async () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "ddalkkak_transport_hwpx.zip";
+    link.download = packageName;
     document.body.appendChild(link);
     link.click();
     link.remove();
