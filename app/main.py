@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field
 
 from app.documents.formats import build_hwpx_zip
 from app.documents.facility_docs import FacilityDocumentData, build_facility_documents
+from app.documents.goods_docs import GoodsDocumentData, build_goods_documents
+from app.documents.works_docs import WorksDocumentData, build_works_documents
 from app.documents.labor_docs import LaborDocumentData, build_labor_documents
 from app.documents.program_docs import ProgramDocumentData, build_program_documents
 from app.documents.travel_docs import TravelDocumentData, build_travel_documents
@@ -25,6 +27,8 @@ from app.documents.transport_docs import (
     build_transport_docx_zip,
     build_transport_hwpx_zip,
 )
+from app.rules.goods import GoodsInput, evaluate_goods
+from app.rules.works import WorksInput, WorksType, evaluate_works
 from app.rules.simple_labor import evaluate_simple_labor
 from app.rules.two_stage import TwoStageInput, TwoStageMethod, evaluate_two_stage
 from app.rules.engine import (
@@ -53,7 +57,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.7.0",
+    version="0.8.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -98,6 +102,41 @@ class TransportQualificationRequest(BaseModel):
     reputation_score: Decimal = Field(default=Decimal("0"), ge=Decimal("-5"), le=Decimal("4.25"))
     disqualification_reason: bool = False
 
+
+
+
+class GoodsRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    item_name: str = Field(min_length=1, max_length=200)
+    estimated_price: int = Field(gt=0)
+    planned_date: date = date(2026, 7, 1)
+    base_amount: int | None = Field(default=None, gt=0)
+    delivery_date: date
+    quantity_text: str = Field(default="[수량 입력 필요]", max_length=5000)
+    specification_text: str = Field(default="[규격 입력 필요]", max_length=10000)
+    delivery_place: str = Field(default="학교 지정장소", max_length=1000)
+    warranty_text: str = Field(default="[하자·A/S 조건 입력 필요]", max_length=3000)
+    inspection_text: str = Field(default="납품 후 규격·수량·품질 검사", max_length=3000)
+    is_sme_competition_product: bool = False
+    direct_production_applicable: bool = False
+    is_publication: bool = False
+    unit_price_contract: bool = False
+
+
+class WorksRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    work_name: str = Field(min_length=1, max_length=200)
+    estimated_price: int = Field(gt=0)
+    works_type: WorksType
+    planned_date: date = date(2026, 7, 1)
+    base_amount: int | None = Field(default=None, gt=0)
+    location: str = Field(default="[공사위치 입력 필요]", max_length=1000)
+    completion_days: int = Field(default=30, gt=0, le=3650)
+    scope_text: str = Field(default="[공사범위 입력 필요]", max_length=10000)
+    required_industry: str = Field(default="", max_length=1000)
+    design_summary: str = Field(default="[설계·내역 요약 입력 필요]", max_length=10000)
+    safety_text: str = Field(default="산업안전보건법 등 관계법령에 따른 안전조치", max_length=3000)
+    region_restriction_requested: bool = True
 
 
 class TravelDocumentRequest(BaseModel):
@@ -292,7 +331,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.7.0",
+        "version": "0.8.0",
     }
 
 
@@ -361,6 +400,169 @@ def calculate_school_transport_qualification(
     )
     return jsonable_encoder(asdict(result))
 
+
+
+
+@app.post("/api/evaluate/goods")
+def evaluate_goods_contract(request: GoodsRequest) -> dict:
+    result = evaluate_goods(
+        GoodsInput(
+            item_name=request.item_name,
+            estimated_price=request.estimated_price,
+            planned_date=request.planned_date,
+            is_sme_competition_product=request.is_sme_competition_product,
+            direct_production_applicable=request.direct_production_applicable,
+            is_publication=request.is_publication,
+            unit_price_contract=request.unit_price_contract,
+        )
+    )
+    return jsonable_encoder(asdict(result))
+
+
+@app.post("/api/documents/goods/preview")
+def preview_goods_documents(request: GoodsRequest) -> dict:
+    rule = evaluate_goods(
+        GoodsInput(
+            item_name=request.item_name,
+            estimated_price=request.estimated_price,
+            planned_date=request.planned_date,
+            is_sme_competition_product=request.is_sme_competition_product,
+            direct_production_applicable=request.direct_production_applicable,
+            is_publication=request.is_publication,
+            unit_price_contract=request.unit_price_contract,
+        )
+    )
+    documents = build_goods_documents(
+        GoodsDocumentData(
+            school_name=request.school_name,
+            item_name=request.item_name,
+            start_date=None,
+            delivery_date=request.delivery_date,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            quantity_text=request.quantity_text,
+            specification_text=request.specification_text,
+            delivery_place=request.delivery_place,
+            warranty_text=request.warranty_text,
+            inspection_text=request.inspection_text,
+        ),
+        rule,
+    )
+    result = _documents_preview(documents)
+    result["rule"] = jsonable_encoder(asdict(rule))
+    return result
+
+
+@app.post("/api/documents/goods/package-hwpx")
+def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
+    preview = preview_goods_documents(request)
+    rule = evaluate_goods(
+        GoodsInput(
+            item_name=request.item_name,
+            estimated_price=request.estimated_price,
+            planned_date=request.planned_date,
+            is_sme_competition_product=request.is_sme_competition_product,
+            direct_production_applicable=request.direct_production_applicable,
+            is_publication=request.is_publication,
+            unit_price_contract=request.unit_price_contract,
+        )
+    )
+    documents = build_goods_documents(
+        GoodsDocumentData(
+            school_name=request.school_name,
+            item_name=request.item_name,
+            start_date=None,
+            delivery_date=request.delivery_date,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            quantity_text=request.quantity_text,
+            specification_text=request.specification_text,
+            delivery_place=request.delivery_place,
+            warranty_text=request.warranty_text,
+            inspection_text=request.inspection_text,
+        ),
+        rule,
+    )
+    return _hwpx_response(documents, "ddalkkak_goods_hwpx.zip")
+
+
+@app.post("/api/evaluate/works")
+def evaluate_works_contract(request: WorksRequest) -> dict:
+    result = evaluate_works(
+        WorksInput(
+            work_name=request.work_name,
+            estimated_price=request.estimated_price,
+            works_type=request.works_type,
+            planned_date=request.planned_date,
+            required_industry=request.required_industry,
+            region_restriction_requested=request.region_restriction_requested,
+        )
+    )
+    return jsonable_encoder(asdict(result))
+
+
+@app.post("/api/documents/works/preview")
+def preview_works_documents(request: WorksRequest) -> dict:
+    rule = evaluate_works(
+        WorksInput(
+            work_name=request.work_name,
+            estimated_price=request.estimated_price,
+            works_type=request.works_type,
+            planned_date=request.planned_date,
+            required_industry=request.required_industry,
+            region_restriction_requested=request.region_restriction_requested,
+        )
+    )
+    documents = build_works_documents(
+        WorksDocumentData(
+            school_name=request.school_name,
+            work_name=request.work_name,
+            location=request.location,
+            start_date=None,
+            completion_days=request.completion_days,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            scope_text=request.scope_text,
+            required_industry=request.required_industry,
+            design_summary=request.design_summary,
+            safety_text=request.safety_text,
+        ),
+        rule,
+    )
+    result = _documents_preview(documents)
+    result["rule"] = jsonable_encoder(asdict(rule))
+    return result
+
+
+@app.post("/api/documents/works/package-hwpx")
+def package_works_documents(request: WorksRequest) -> StreamingResponse:
+    rule = evaluate_works(
+        WorksInput(
+            work_name=request.work_name,
+            estimated_price=request.estimated_price,
+            works_type=request.works_type,
+            planned_date=request.planned_date,
+            required_industry=request.required_industry,
+            region_restriction_requested=request.region_restriction_requested,
+        )
+    )
+    documents = build_works_documents(
+        WorksDocumentData(
+            school_name=request.school_name,
+            work_name=request.work_name,
+            location=request.location,
+            start_date=None,
+            completion_days=request.completion_days,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            scope_text=request.scope_text,
+            required_industry=request.required_industry,
+            design_summary=request.design_summary,
+            safety_text=request.safety_text,
+        ),
+        rule,
+    )
+    return _hwpx_response(documents, "ddalkkak_works_hwpx.zip")
 
 
 @app.post("/api/documents/travel/preview")
