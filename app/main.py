@@ -64,7 +64,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 계약업무",
     description="학교 공사·용역·물품 계약업무 지원 웹도구",
-    version="0.16.0",
+    version="0.17.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -296,6 +296,12 @@ class TransportDocumentRequest(TransportEvaluateRequest):
     bid_open: str = Field(default="", max_length=100)
     vehicle_year_condition: str = Field(default="", max_length=300)
     direct_vehicle_required: bool = False
+    joint_supply_allowed: bool = False
+    equal_price_method: str = Field(default="", max_length=500)
+    qualification_document_deadline_text: str = Field(default="[적격심사 대상 통보 후 공고에서 정한 기한]", max_length=300)
+    contract_deadline_text: str = Field(default="[계약상대자 결정 후 공고에서 정한 기한]", max_length=300)
+    minimum_wage_pledge_required: bool = True
+    social_insurance_settlement_text: str = Field(default="[해당 시 원가계산서 계상금액 및 사후정산 적용 여부 확인]", max_length=1000)
     extra_notes: str = Field(default="", max_length=1000)
     routes: list[RouteRequest] = Field(default_factory=list, max_length=50)
 
@@ -341,6 +347,12 @@ def _build_document_data(request: TransportDocumentRequest, rule) -> TransportDo
         bid_open=request.bid_open,
         vehicle_year_condition=request.vehicle_year_condition,
         direct_vehicle_required=request.direct_vehicle_required,
+        joint_supply_allowed=request.joint_supply_allowed,
+        equal_price_method=request.equal_price_method,
+        qualification_document_deadline_text=request.qualification_document_deadline_text,
+        contract_deadline_text=request.contract_deadline_text,
+        minimum_wage_pledge_required=request.minimum_wage_pledge_required,
+        social_insurance_settlement_text=request.social_insurance_settlement_text,
         pricing_method_label=pricing_label,
         service_item_name=rule.service_item_name,
         service_item_code=rule.service_item_code,
@@ -386,7 +398,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.16.0",
+        "version": "0.17.0",
     }
 
 
