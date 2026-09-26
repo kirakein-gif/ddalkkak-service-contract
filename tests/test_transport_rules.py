@@ -124,3 +124,12 @@ def test_undetermined_item_does_not_auto_apply_89995() -> None:
     )
     assert result.minimum_quote_rate is None
     assert any("89.995" in warning for warning in result.warnings)
+
+
+
+def test_transport_adds_contract_practice_checks() -> None:
+    result = evaluate_transport(make_transport(150_000_000))
+    assert any("공동수급" in item for item in result.required_checks)
+    assert any("운행일수" in item for item in result.required_checks)
+    assert any("최저임금" in item for item in result.required_checks)
+    assert any("사후정산" in item for item in result.required_checks)
