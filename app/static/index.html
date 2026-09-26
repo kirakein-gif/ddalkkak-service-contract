@@ -653,6 +653,7 @@ $("downloadBtn").onclick = async () => {
 function collectQualificationRequest() {
   return {
     estimated_price: Number($("estimatedPrice").value),
+    planned_date: $("plannedDate").value,
     expected_price: Number($("qualExpectedPrice").value),
     bid_price: Number($("qualBidPrice").value),
     performance_base_amount: Number($("qualPerformanceBase").value),
