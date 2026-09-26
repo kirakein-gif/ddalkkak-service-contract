@@ -31,7 +31,7 @@ def test_two_stage_score_is_school_defined():
         )
     )
     assert result.proposal_pass_score == 75
-    assert any("80점" in item for item in result.warnings)
+    assert any("법정 고정값" in item for item in result.warnings)
 
 
 def test_travel_builds_five_hwpx_documents():
@@ -116,3 +116,51 @@ def test_travel_chungnam_samples_keep_variable_terms_out_of_hardcoded_rules():
 def test_two_stage_requires_school_to_choose_equal_price_method():
     result = evaluate_two_stage(TwoStageInput(service_name="수학여행"))
     assert any("동일가격" in item for item in result.checks)
+
+
+
+def test_program_chungnam_samples_apply_85_point_default_pattern_but_keep_it_editable():
+    rule = evaluate_two_stage(TwoStageInput(service_name="늘봄 프로그램", proposal_pass_score=85))
+    docs = build_program_documents(
+        ProgramDocumentData(
+            school_name="○○초등학교",
+            service_name="2027학년도 늘봄학교 프로그램 운영 용역",
+            start_date=date(2027, 3, 1),
+            end_date=date(2028, 2, 29),
+            estimated_price=168_000_000,
+            base_amount=168_000_000,
+            notice_date=date(2027, 1, 5),
+            expected_students=180,
+            program_count=12,
+            programs_text="독서논술, 축구, 방송댄스",
+            operation_text="주 2회, 회당 50분",
+            region_limit="충청남도",
+            labor_cost_ratio_percent=82.465,
+        ),
+        rule,
+    )
+    notice = docs[0].content
+    assert "85점 이상" in notice
+    assert "직접 방문 제출" in notice
+    assert "송신함" in notice or "보낸 문서함" in notice
+    assert "복수예비가격 15개" in notice
+    assert "제안서 평가점수 높은 업체 우선" in notice
+    assert "82.465%" in notice
+    assert "변경계약" in notice
+    assert "예정 학생수는" in notice
+    assert "중소기업" in notice
+
+
+def test_program_pass_score_can_be_changed_by_school():
+    rule = evaluate_two_stage(TwoStageInput(service_name="방과후 프로그램", proposal_pass_score=82))
+    docs = build_program_documents(
+        ProgramDocumentData(
+            school_name="○○학교",
+            service_name="방과후 프로그램 운영 용역",
+            start_date=date(2027, 3, 1),
+            end_date=date(2028, 2, 28),
+            estimated_price=100_000_000,
+        ),
+        rule,
+    )
+    assert "82점 이상" in docs[0].content
