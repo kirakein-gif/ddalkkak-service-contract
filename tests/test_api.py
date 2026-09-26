@@ -216,3 +216,54 @@ def test_labor_document_api_marks_two_stage_as_not_allowed() -> None:
     body = response.json()
     assert body["rule"]["two_stage_allowed"] is False
     assert len(body["documents"]) == 5
+
+
+
+def test_goods_document_api_and_hwpx_package() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "item_name": "복사용지 구매",
+        "estimated_price": 30000000,
+        "planned_date": "2026-09-26",
+        "delivery_date": "2027-03-15",
+        "quantity_text": "A4 80g 500박스",
+        "specification_text": "백색도 및 평량은 규격서 참조",
+        "delivery_place": "○○초 행정실",
+        "is_sme_competition_product": False,
+        "direct_production_applicable": False,
+    }
+    preview = client.post("/api/documents/goods/preview", json=payload)
+    assert preview.status_code == 200
+    assert preview.json()["rule"]["route_code"] == "GOODS_TWO_PERSON"
+    assert len(preview.json()["documents"]) == 4
+
+    package = client.post("/api/documents/goods/package-hwpx", json=payload)
+    assert package.status_code == 200
+    with ZipFile(BytesIO(package.content)) as archive:
+        assert len(archive.namelist()) == 4
+
+
+def test_works_document_api_and_hwpx_package() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "work_name": "교실 바닥 교체공사",
+        "estimated_price": 80000000,
+        "works_type": "SPECIALIZED",
+        "planned_date": "2026-09-26",
+        "location": "본관 2층",
+        "completion_days": 30,
+        "scope_text": "기존 바닥 철거 및 신설",
+        "required_industry": "실내건축공사업",
+        "design_summary": "설계서 및 내역서 참조",
+        "region_restriction_requested": True,
+    }
+    preview = client.post("/api/documents/works/preview", json=payload)
+    assert preview.status_code == 200
+    assert preview.json()["rule"]["route_code"] == "WORKS_TWO_PERSON"
+    assert preview.json()["rule"]["minimum_quote_rate"] == 0.89745
+    assert len(preview.json()["documents"]) == 4
+
+    package = client.post("/api/documents/works/package-hwpx", json=payload)
+    assert package.status_code == 200
+    with ZipFile(BytesIO(package.content)) as archive:
+        assert len(archive.namelist()) == 4
