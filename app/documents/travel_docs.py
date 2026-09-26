@@ -28,7 +28,10 @@ class TravelDocumentData:
     proposal_evaluation_datetime: str = "[입력 필요]"
     bid_open_datetime: str = "[입력 필요]"
     region_limit: str = ""
-    itinerary_text: str = "[세부일정 입력 필요]"\n    tie_break_method: str = "[학교가 공고 전에 확정: 동일가격 처리기준]"\n    contract_deadline_text: str = "[학교가 공고에서 정한 계약체결 기한]"\n    cost_breakdown_required: bool = True
+    itinerary_text: str = "[세부일정 입력 필요]"
+    tie_break_method: str = "[학교가 공고 전에 확정: 동일가격 처리기준]"
+    contract_deadline_text: str = "[학교가 공고에서 정한 계약체결 기한]"
+    cost_breakdown_required: bool = True
 
 
 def _money(value: int | None) -> str:
