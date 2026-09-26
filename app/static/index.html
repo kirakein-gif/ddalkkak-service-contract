@@ -78,7 +78,7 @@
       position: absolute; right: 10px; top: 10px; border: 0; background: #f4f6f9;
       color: #6b7c91; width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
     }
-    .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
     .action {
       border: 0; border-radius: 11px; padding: 14px; font-weight: 800; cursor: pointer;
     }
@@ -140,12 +140,33 @@
     <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
     <h1>딸깍 용역계약</h1>
     <p class="desc">학교 용역의 계약방법을 검토하고, 통학차량은 공고문·과업지시서·특수조건·운행노선표까지 자동 생성합니다.</p>
-    <span class="version">v0.5 · 통학차량 적격심사 계산기</span>
+    <span class="version">v0.6 · HWPX 출력 · 나라장터 공고 불러오기</span>
   </section>
 
   <section class="panel">
     <h2>1. 계약 기본정보</h2>
     <p class="hint">먼저 업무유형을 선택하고 부가가치세를 제외한 <b>추정가격</b>을 입력하세요.</p>
+
+    
+    <div class="subpanel" style="margin-top:0;margin-bottom:18px">
+      <div class="subpanel-head">
+        <div>
+          <h3>나라장터 공고 불러오기</h3>
+          <p>용역 입찰공고번호를 입력하면 공고명·추정가격·기초금액·지역제한·일정을 자동으로 채웁니다.</p>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="g2bBidNo">입찰공고번호</label>
+          <input id="g2bBidNo" placeholder="예: R26BK01234567">
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <button id="g2bLoadBtn" class="action secondary" type="button">나라장터에서 불러오기</button>
+        </div>
+      </div>
+      <div id="g2bStatus" class="status-note"></div>
+      <div id="g2bSummary" class="hint" style="margin-top:8px;margin-bottom:0"></div>
+    </div>
 
     <div class="mode">
       <button id="generalMode" class="active" type="button">일반 학교용역</button>
@@ -226,7 +247,8 @@
     <div class="actions">
       <button class="action primary" id="evaluateBtn" type="button">계약방법 분석</button>
       <button class="action secondary hidden" id="previewBtn" type="button">문서 4종 미리보기</button>
-      <button class="action tertiary hidden" id="downloadBtn" type="button">DOCX 4종 받기</button>
+      <button class="action primary hidden" id="downloadBtn" type="button">HWPX 4종 받기</button>
+      <button class="action tertiary hidden" id="docxDownloadBtn" type="button">DOCX 보조 출력</button>
     </div>
     <div id="error" class="error"></div>
     <div id="statusNote" class="status-note"></div>
@@ -394,6 +416,71 @@ const $ = id => document.getElementById(id);
 let mode = "general";
 let routeCounter = 0;
 
+
+function parseG2bDate(value) {
+  if (!value) return "";
+  const text = String(value).trim();
+  const digits = text.replace(/\D/g, "");
+  if (digits.length >= 8) {
+    return digits.slice(0,4) + "-" + digits.slice(4,6) + "-" + digits.slice(6,8);
+  }
+  return text.slice(0,10);
+}
+
+function applyG2bCase(data) {
+  const fill = data.autofill || {};
+  if (fill.service_name) $("serviceName").value = fill.service_name;
+  if (fill.estimated_price) $("estimatedPrice").value = fill.estimated_price;
+  if (fill.base_amount) $("baseAmount").value = fill.base_amount;
+  if (fill.region_restriction_text) $("regionText").value = fill.region_restriction_text;
+  if (fill.bid_start) $("bidStart").value = fill.bid_start;
+  if (fill.bid_end) $("bidEnd").value = fill.bid_end;
+  if (fill.bid_open) $("bidOpen").value = fill.bid_open;
+  if (data.demand_institution) $("schoolName").value = data.demand_institution;
+  if (data.notice_datetime) $("plannedDate").value = parseG2bDate(data.notice_datetime);
+
+  const itemNames = (data.items || []).map(item => String(item.detail_product_name || "")).join(" ");
+  if (itemNames.includes("통학운송서비스")) {
+    $("serviceItem").value = "SCHOOL_TRANSPORT";
+  } else if (itemNames.includes("기타도로여객운송서비스")) {
+    $("serviceItem").value = "OTHER_ROAD_PASSENGER";
+  }
+
+  const parts = [
+    data.bid_notice_name || "",
+    data.demand_institution ? "수요기관: " + data.demand_institution : "",
+    data.estimated_price ? "추정가격: " + Number(data.estimated_price).toLocaleString() + "원" : "",
+    data.base_amount ? "기초금액: " + Number(data.base_amount).toLocaleString() + "원" : "",
+    data.region_limit ? "지역: " + data.region_limit : ""
+  ].filter(Boolean);
+  $("g2bSummary").textContent = parts.join(" · ");
+}
+
+$("g2bLoadBtn").onclick = async () => {
+  $("g2bStatus").textContent = "";
+  $("g2bSummary").textContent = "";
+  const bidNo = $("g2bBidNo").value.trim();
+  if (!bidNo) {
+    $("g2bStatus").textContent = "입찰공고번호를 입력해 주세요.";
+    return;
+  }
+  $("g2bStatus").textContent = "나라장터 공고정보를 조회하고 있습니다.";
+  try {
+    const response = await fetch("/api/g2b/service-notice/" + encodeURIComponent(bidNo));
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.detail || "공고 조회에 실패했습니다.");
+    }
+    if (!data.found) {
+      throw new Error(data.message || "용역 공고를 찾지 못했습니다.");
+    }
+    applyG2bCase(data);
+    $("g2bStatus").textContent = "공고정보를 불러와 입력값에 반영했습니다.";
+  } catch (error) {
+    $("g2bStatus").textContent = "오류: " + error.message;
+  }
+};
+
 function setMode(next) {
   mode = next;
   $("generalMode").classList.toggle("active", next === "general");
@@ -404,6 +491,7 @@ function setMode(next) {
   $("qualificationPanel").classList.toggle("hidden", next !== "transport");
   $("previewBtn").classList.toggle("hidden", next !== "transport");
   $("downloadBtn").classList.toggle("hidden", next !== "transport");
+  $("docxDownloadBtn").classList.toggle("hidden", next !== "transport");
   $("previewPanel").classList.add("hidden");
   $("statusNote").textContent = "";
   if (next === "transport") {
@@ -621,9 +709,9 @@ $("previewBtn").onclick = async () => {
   }
 };
 
-$("downloadBtn").onclick = async () => {
+$("docxDownloadBtn").onclick = async () => {
   $("error").textContent = "";
-  $("statusNote").textContent = "DOCX 문서 묶음을 생성하고 있습니다.";
+  $("statusNote").textContent = "DOCX 보조 문서 묶음을 생성하고 있습니다.";
   try {
     const response = await fetch("/api/documents/transport/package", {
       method: "POST",
@@ -638,12 +726,41 @@ $("downloadBtn").onclick = async () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "ddalkkak_transport_documents.zip";
+    link.download = "ddalkkak_transport_docx.zip";
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    $("statusNote").textContent = "DOCX 4종 문서 묶음을 생성했습니다.";
+    $("statusNote").textContent = "DOCX 4종 보조 문서 묶음을 생성했습니다.";
+  } catch (error) {
+    $("statusNote").textContent = "";
+    $("error").textContent = "오류: " + error.message;
+  }
+};
+
+$("downloadBtn").onclick = async () => {
+  $("error").textContent = "";
+  $("statusNote").textContent = "HWPX 문서 묶음을 생성하고 있습니다.";
+  try {
+    const response = await fetch("/api/documents/transport/package-hwpx", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(collectDocumentRequest())
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail ? JSON.stringify(data.detail) : "문서 생성에 실패했습니다.");
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ddalkkak_transport_hwpx.zip";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    $("statusNote").textContent = "HWPX 4종 문서 묶음을 생성했습니다.";
   } catch (error) {
     $("statusNote").textContent = "";
     $("error").textContent = "오류: " + error.message;
