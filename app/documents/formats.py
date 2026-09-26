@@ -152,7 +152,7 @@ def _style_cell(
     line_spacing: int = 145,
     logical: bool = False,
 ) -> None:
-    cell = table.cell(row, col, logical=logical)
+    cell = table.cell(row, col)
     if not cell.paragraphs:
         return
     paragraph = cell.paragraphs[0]
