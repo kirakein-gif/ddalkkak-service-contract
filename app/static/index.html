@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
     <h1>딸깍 용역계약</h1>
     <p class="desc">학교 용역의 계약방법을 검토하고, 통학차량은 공고문·과업지시서·특수조건·운행노선표까지 자동 생성합니다.</p>
-    <span class="version">v0.8 · 용역 · 물품 · 공사 HWPX</span>
+    <span class="version">v0.9 · 물품·공사 실제 공고문 생성</span>
   </section>
 
   <section class="panel">
@@ -253,17 +253,37 @@
         <div class="field"><label for="goodsDeliveryDate">납품기한</label><input id="goodsDeliveryDate" type="date" value="2027-03-15"></div>
         <div class="field"><label for="goodsBaseAmount">기초금액(원)</label><input id="goodsBaseAmount" type="number" min="1"></div>
       </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="goodsBudgetAmount">예산액(원)</label><input id="goodsBudgetAmount" type="number" min="1"></div>
+        <div class="field"><label for="goodsNoticeNumber">공고번호</label><input id="goodsNoticeNumber" placeholder="예: ○○초-공고-2026-00"></div>
+        <div class="field"><label for="goodsRegionLimit">지역제한</label><input id="goodsRegionLimit" placeholder="예: 충청남도"></div>
+      </div>
       <div class="grid2" style="margin-top:12px">
         <div class="field"><label for="goodsQuantity">수량</label><input id="goodsQuantity" placeholder="예: A4 복사용지 500박스"></div>
         <div class="field"><label for="goodsDeliveryPlace">납품장소</label><input id="goodsDeliveryPlace" value="학교 지정장소"></div>
       </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsDetailName">나라장터 세부품명</label><input id="goodsDetailName" placeholder="예: 복사용지"></div>
+        <div class="field"><label for="goodsDetailCode">세부품명번호</label><input id="goodsDetailCode" placeholder="10자리 세부품명번호"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="goodsBidStart">견적·입찰 개시</label><input id="goodsBidStart" placeholder="2026. 10. 1. 10:00"></div>
+        <div class="field"><label for="goodsBidEnd">견적·입찰 마감</label><input id="goodsBidEnd" placeholder="2026. 10. 7. 10:00"></div>
+        <div class="field"><label for="goodsBidOpen">개찰일시</label><input id="goodsBidOpen" placeholder="2026. 10. 7. 11:00"></div>
+      </div>
       <div class="field" style="margin-top:12px"><label for="goodsSpec">세부규격</label><textarea id="goodsSpec" placeholder="규격, 재질, 성능, 인증조건 등"></textarea></div>
       <div class="field" style="margin-top:12px"><label for="goodsWarranty">하자·A/S 조건</label><textarea id="goodsWarranty" placeholder="하자보증기간, A/S, 교환조건 등"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsContactName">담당자</label><input id="goodsContactName"></div>
+        <div class="field"><label for="goodsContactPhone">연락처</label><input id="goodsContactPhone"></div>
+      </div>
       <div class="checks" style="margin-top:12px">
         <label class="check"><input id="goodsSmeProduct" type="checkbox">중소기업자간 경쟁제품</label>
         <label class="check"><input id="goodsDirectProduction" type="checkbox">직접생산확인 대상</label>
         <label class="check"><input id="goodsPublication" type="checkbox">간행물 구매</label>
         <label class="check"><input id="goodsUnitPrice" type="checkbox">단가계약</label>
+        <label class="check"><input id="goodsJointSupply" type="checkbox">공동수급 허용</label>
+        <label class="check"><input id="goodsRebid" type="checkbox" checked>재견적·재입찰 허용</label>
       </div>
     </div>
 
@@ -281,14 +301,35 @@
         <div class="field"><label for="worksBaseAmount">기초금액(원)</label><input id="worksBaseAmount" type="number" min="1"></div>
       </div>
       <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksBudgetAmount">예산액(원)</label><input id="worksBudgetAmount" type="number" min="1"></div>
+        <div class="field"><label for="worksNoticeNumber">공고번호</label><input id="worksNoticeNumber" placeholder="예: ○○초-공고-2026-00"></div>
+        <div class="field"><label for="worksRegionLimit">지역제한</label><input id="worksRegionLimit" placeholder="예: 충청남도"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
         <div class="field"><label for="worksLocation">공사위치</label><input id="worksLocation" placeholder="예: 본관 2층 교실"></div>
         <div class="field"><label for="worksDays">공사기간(일)</label><input id="worksDays" type="number" min="1" value="30"></div>
         <div class="field"><label for="worksIndustry">요구 업종·주력분야</label><input id="worksIndustry" placeholder="예: 실내건축공사업"></div>
       </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksBidStart">견적·입찰 개시</label><input id="worksBidStart" placeholder="2026. 10. 1. 10:00"></div>
+        <div class="field"><label for="worksBidEnd">견적·입찰 마감</label><input id="worksBidEnd" placeholder="2026. 10. 7. 10:00"></div>
+        <div class="field"><label for="worksBidOpen">개찰일시</label><input id="worksBidOpen" placeholder="2026. 10. 7. 11:00"></div>
+      </div>
       <div class="field" style="margin-top:12px"><label for="worksScope">공사범위</label><textarea id="worksScope" placeholder="철거, 바닥 교체, 마감 등"></textarea></div>
       <div class="field" style="margin-top:12px"><label for="worksDesign">설계·내역 요약</label><textarea id="worksDesign" placeholder="설계서 및 내역의 주요내용"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="worksAValue">A값 합계(원)</label><input id="worksAValue" type="number" min="0" placeholder="보험료·퇴직공제·산업안전보건관리비 등 합계"></div>
+        <div class="field"><label for="worksSiteExplanation">현장설명</label><input id="worksSiteExplanation" value="별도의 현장설명은 생략하고 설계서·내역서 열람으로 갈음"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="worksInsuranceBreakdown">법정경비 세부내역</label><textarea id="worksInsuranceBreakdown" placeholder="예: 국민연금 1,000,000원 / 건강보험 800,000원 / 산업안전보건관리비 500,000원"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="worksContactName">담당자</label><input id="worksContactName"></div>
+        <div class="field"><label for="worksContactPhone">연락처</label><input id="worksContactPhone"></div>
+      </div>
       <div class="checks" style="margin-top:12px">
         <label class="check"><input id="worksRegion" type="checkbox" checked>지역제한 검토</label>
+        <label class="check"><input id="worksJointSupply" type="checkbox">공동수급 허용</label>
+        <label class="check"><input id="worksRebid" type="checkbox" checked>재견적·재입찰 허용</label>
       </div>
     </div>
 
@@ -454,7 +495,7 @@
   <section id="previewPanel" class="panel doc-preview hidden">
 
     <h2>4. 문서 미리보기</h2>
-    <p class="hint">미리보기에서 빈칸과 학교 선택조건을 확인한 뒤 DOCX를 생성하세요.</p>
+    <p class="hint">미리보기에서 빈칸과 공고조건을 확인한 뒤 HWPX를 생성하세요.</p>
     <div id="previewDocs"></div>
   </section>
 </main>
@@ -667,12 +708,24 @@ function collectGoods() {
     estimated_price: Number($("estimatedPrice").value),
     planned_date: $("plannedDate").value,
     base_amount: optionalNumber("goodsBaseAmount"),
+    budget_amount: optionalNumber("goodsBudgetAmount"),
     delivery_date: $("goodsDeliveryDate").value,
     quantity_text: $("goodsQuantity").value.trim() || "[수량 입력 필요]",
     specification_text: $("goodsSpec").value.trim() || "[규격 입력 필요]",
     delivery_place: $("goodsDeliveryPlace").value.trim() || "학교 지정장소",
     warranty_text: $("goodsWarranty").value.trim() || "[하자·A/S 조건 입력 필요]",
     inspection_text: "납품 후 규격·수량·품질 검사",
+    notice_number: $("goodsNoticeNumber").value.trim(),
+    bid_start: $("goodsBidStart").value.trim() || "[입력 필요]",
+    bid_end: $("goodsBidEnd").value.trim() || "[입력 필요]",
+    bid_open: $("goodsBidOpen").value.trim() || "[입력 필요]",
+    region_limit: $("goodsRegionLimit").value.trim(),
+    detail_product_name: $("goodsDetailName").value.trim(),
+    detail_product_code: $("goodsDetailCode").value.trim(),
+    contact_name: $("goodsContactName").value.trim(),
+    contact_phone: $("goodsContactPhone").value.trim(),
+    joint_supply_allowed: $("goodsJointSupply").checked,
+    rebid_allowed: $("goodsRebid").checked,
     is_sme_competition_product: $("goodsSmeProduct").checked,
     direct_production_applicable: $("goodsDirectProduction").checked,
     is_publication: $("goodsPublication").checked,
@@ -688,12 +741,25 @@ function collectWorks() {
     works_type: $("worksType").value,
     planned_date: $("plannedDate").value,
     base_amount: optionalNumber("worksBaseAmount"),
+    budget_amount: optionalNumber("worksBudgetAmount"),
     location: $("worksLocation").value.trim() || "[공사위치 입력 필요]",
     completion_days: Number($("worksDays").value) || 30,
     scope_text: $("worksScope").value.trim() || "[공사범위 입력 필요]",
     required_industry: $("worksIndustry").value.trim(),
     design_summary: $("worksDesign").value.trim() || "[설계·내역 요약 입력 필요]",
     safety_text: "산업안전보건법 등 관계법령에 따른 안전조치",
+    notice_number: $("worksNoticeNumber").value.trim(),
+    bid_start: $("worksBidStart").value.trim() || "[입력 필요]",
+    bid_end: $("worksBidEnd").value.trim() || "[입력 필요]",
+    bid_open: $("worksBidOpen").value.trim() || "[입력 필요]",
+    region_limit: $("worksRegionLimit").value.trim(),
+    contact_name: $("worksContactName").value.trim(),
+    contact_phone: $("worksContactPhone").value.trim(),
+    a_value_total: optionalNumber("worksAValue"),
+    insurance_breakdown_text: $("worksInsuranceBreakdown").value.trim() || "[국민연금·건강보험·퇴직공제·산업안전보건관리비 등 세부금액 입력 필요]",
+    site_explanation: $("worksSiteExplanation").value.trim() || "별도의 현장설명은 생략하고 설계서·내역서 열람으로 갈음",
+    joint_supply_allowed: $("worksJointSupply").checked,
+    rebid_allowed: $("worksRebid").checked,
     region_restriction_requested: $("worksRegion").checked
   };
 }
