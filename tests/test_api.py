@@ -327,3 +327,28 @@ def test_catalog_endpoints_return_school_types() -> None:
     assert goods.status_code == 200
     assert any(item["code"] == "ELECTRICAL" for item in works.json())
     assert any(item["code"] == "FOOD_INGREDIENTS" for item in goods.json())
+
+
+
+def test_program_api_defaults_to_editable_chungnam_sample_score() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "service_name": "2027학년도 늘봄학교 프로그램 운영 용역",
+        "start_date": "2027-03-01",
+        "end_date": "2028-02-29",
+        "estimated_price": 168000000,
+        "base_amount": 168000000,
+        "expected_students": 180,
+        "program_count": 12,
+        "programs_text": "독서논술, 축구, 방송댄스",
+        "operation_text": "주 2회, 회당 50분",
+        "region_limit": "충청남도"
+    }
+    response = client.post("/api/documents/program/preview", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["rule"]["proposal_pass_score"] == 85
+    notice = body["documents"][0]["content"]
+    assert "85점 이상" in notice
+    assert "충청남도" in notice
+    assert "복수예비가격 15개" in notice
