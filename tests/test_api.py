@@ -109,3 +109,18 @@ def test_transport_qualification_api_rejects_500m_band() -> None:
         },
     )
     assert response.status_code == 422
+
+
+
+def test_transport_hwpx_package_api_returns_zip_with_four_hwpx() -> None:
+    response = client.post(
+        "/api/documents/transport/package-hwpx",
+        json=transport_payload(),
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/zip"
+
+    with ZipFile(BytesIO(response.content)) as archive:
+        names = archive.namelist()
+        assert len(names) == 4
+        assert all(name.endswith(".hwpx") for name in names)
