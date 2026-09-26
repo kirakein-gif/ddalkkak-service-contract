@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>딸깍 용역계약</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Malgun Gothic", sans-serif;
+      background: #f4f7fb;
+      color: #17253a;
+    }
+    button, input, select, textarea { font: inherit; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 34px 20px 64px; }
+    .hero, .panel {
+      background: #fff;
+      border: 1px solid #dbe4f0;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(23, 37, 58, .05);
+    }
+    .hero { padding: 32px; }
+    .panel { margin-top: 18px; padding: 24px; }
+    .brand { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; color: #2563eb; }
+    h1 { margin: 8px 0 10px; font-size: 36px; letter-spacing: -1.3px; }
+    h2 { margin: 0 0 6px; font-size: 21px; }
+    h3 { margin: 0 0 8px; font-size: 17px; }
+    .desc { margin: 0; color: #5d6f86; line-height: 1.7; }
+    .hint { margin: 0 0 18px; color: #6d7e92; font-size: 14px; line-height: 1.6; }
+    .version {
+      display: inline-block; margin-top: 13px; padding: 7px 11px; border-radius: 999px;
+      background: #edf4ff; color: #245fb7; font-size: 12px; font-weight: 800;
+    }
+    .mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .mode button {
+      border: 1px solid #d8e2ef; background: #fff; color: #455971; padding: 13px;
+      border-radius: 12px; font-weight: 800; cursor: pointer;
+    }
+    .mode button.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 12px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field label { font-size: 13px; font-weight: 800; color: #43566d; }
+    input, select, textarea {
+      width: 100%; border: 1px solid #cfd9e6; border-radius: 10px; padding: 11px 12px;
+      background: #fff; color: #17253a;
+    }
+    textarea { min-height: 86px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: 0; border-color: #7eaaf1; box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .check {
+      display: flex; gap: 8px; align-items: flex-start; padding: 11px;
+      border: 1px solid #e1e8f1; border-radius: 10px; font-size: 13px; color: #4d6179;
+      background: #fff;
+    }
+    .check input { width: auto; margin-top: 2px; }
+    .subpanel {
+      margin-top: 16px; padding: 18px; border: 1px solid #e2e9f2; border-radius: 14px;
+      background: #fafcff;
+    }
+    .subpanel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px;
+    }
+    .subpanel-head p { margin: 0; color: #718196; font-size: 13px; }
+    .mini-btn {
+      border: 1px solid #cad8ea; border-radius: 9px; background: #fff; color: #315b92;
+      padding: 8px 11px; font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+    .route-row {
+      position: relative; padding: 14px; margin-top: 10px; border: 1px solid #e0e8f2;
+      border-radius: 12px; background: #fff;
+    }
+    .route-remove {
+      position: absolute; right: 10px; top: 10px; border: 0; background: #f4f6f9;
+      color: #6b7c91; width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    }
+    .actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; }
+    .action {
+      border: 0; border-radius: 11px; padding: 14px; font-weight: 800; cursor: pointer;
+    }
+    .primary { background: #2563eb; color: #fff; }
+    .secondary { background: #eaf2ff; color: #245eb7; }
+    .tertiary { background: #eef1f5; color: #3f536b; }
+    .hidden { display: none !important; }
+    .error { margin-top: 12px; color: #b42318; font-weight: 700; font-size: 13px; }
+    .status-note { margin-top: 12px; color: #245eb7; font-size: 13px; font-weight: 700; }
+    .result { display: none; margin-top: 18px; }
+    .result.show { display: block; }
+    .summary {
+      display: flex; justify-content: space-between; gap: 12px; padding: 18px;
+      border-radius: 14px; background: #f8fbff; border: 1px solid #d8e8ff;
+    }
+    .summary h3 { margin: 0 0 6px; font-size: 20px; }
+    .summary p { margin: 0; color: #62748b; font-size: 13px; }
+    .badge {
+      height: max-content; padding: 7px 10px; border-radius: 999px;
+      background: #e7f0ff; color: #205bb7; font-size: 12px; font-weight: 800;
+    }
+    .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-top: 10px; }
+    .meta-box { padding: 12px; border: 1px solid #e1e8f1; border-radius: 11px; background: #fff; }
+    .meta-box small { display: block; color: #8190a3; margin-bottom: 4px; }
+    .meta-box b { font-size: 13px; }
+    .sections { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .section { padding: 15px; border: 1px solid #e1e8f1; border-radius: 12px; background: #fff; }
+    .section h4 { margin: 0 0 8px; font-size: 14px; }
+    .section ul { margin: 0; padding-left: 18px; color: #556980; font-size: 13px; line-height: 1.7; }
+    .warning { background: #fff9ee; border-color: #f1deb0; }
+    .doc-preview { margin-top: 18px; }
+    .doc-card {
+      margin-top: 12px; padding: 18px; border: 1px solid #dfe7f1; border-radius: 14px; background: #fff;
+    }
+    .doc-card h3 { color: #244b7f; }
+    .doc-card pre {
+      margin: 0; white-space: pre-wrap; word-break: keep-all; font-family: "Malgun Gothic", sans-serif;
+      font-size: 13px; line-height: 1.75; color: #33485f; background: #f8fafc;
+      padding: 16px; border-radius: 10px; max-height: 520px; overflow: auto;
+    }
+    .foot { margin-top: 14px; font-size: 12px; color: #8492a4; line-height: 1.6; }
+    @media (max-width: 920px) {
+      .grid4, .grid3, .grid2, .sections { grid-template-columns: 1fr; }
+      .meta { grid-template-columns: 1fr 1fr; }
+      .actions { grid-template-columns: 1fr; }
+      .checks { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .wrap { padding: 20px 12px 40px; }
+      .hero, .panel { padding: 20px; border-radius: 15px; }
+      h1 { font-size: 29px; }
+      .mode, .meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
+    <h1>딸깍 용역계약</h1>
+    <p class="desc">학교 용역의 계약방법을 검토하고, 통학차량은 공고문·과업지시서·특수조건·운행노선표까지 자동 생성합니다.</p>
+    <span class="version">v0.9 · 물품·공사 실제 공고문 생성</span>
+  </section>
+
+  <section class="panel">
+    <h2>1. 계약 기본정보</h2>
+    <p class="hint">먼저 업무유형을 선택하고 부가가치세를 제외한 <b>추정가격</b>을 입력하세요.</p>
+
+    
+    <div class="subpanel" style="margin-top:0;margin-bottom:18px">
+      <div class="subpanel-head">
+        <div>
+          <h3>나라장터 공고 불러오기</h3>
+          <p>용역 입찰공고번호를 입력하면 공고명·추정가격·기초금액·지역제한·일정을 자동으로 채웁니다.</p>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="g2bBidNo">입찰공고번호</label>
+          <input id="g2bBidNo" placeholder="예: R26BK01234567">
+        </div>
+        <div class="field" style="justify-content:flex-end">
+          <button id="g2bLoadBtn" class="action secondary" type="button">나라장터에서 불러오기</button>
+        </div>
+      </div>
+      <div id="g2bStatus" class="status-note"></div>
+      <div id="g2bSummary" class="hint" style="margin-top:8px;margin-bottom:0"></div>
+    </div>
+
+    <div class="mode" style="grid-template-columns:repeat(4,1fr)">
+      <button id="generalMode" class="active" type="button">일반 용역</button>
+      <button id="transportMode" type="button">통학차량</button>
+      <button id="goodsMode" type="button">물품</button>
+      <button id="worksMode" type="button">공사</button>
+    </div>
+
+    <div class="grid3">
+      <div class="field"><label for="serviceName">용역명</label><input id="serviceName" value="학교 시설 유지관리 용역"></div>
+      <div class="field"><label for="estimatedPrice">추정가격(원)</label><input id="estimatedPrice" type="number" min="1" value="30000000"></div>
+      <div class="field"><label for="plannedDate">공고·계약 예정일</label><input id="plannedDate" type="date" value="2026-09-26"></div>
+    </div>
+
+    <div id="generalFields" class="subpanel">
+      <div class="grid2">
+        <div class="field">
+          <label for="vendorCategory">계약상대자 특별유형</label>
+          <select id="vendorCategory">
+            <option value="NONE">해당 없음</option>
+            <option value="YOUTH_STARTUP">청년창업기업</option>
+            <option value="WOMEN">여성기업</option>
+            <option value="DISABLED">장애인기업</option>
+            <option value="SOCIAL_ENTERPRISE">사회적기업</option>
+            <option value="SOCIAL_COOP">사회적협동조합</option>
+            <option value="SELF_SUPPORT">자활기업</option>
+            <option value="VILLAGE_ENTERPRISE">마을기업</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>추가 특성</label>
+          <div class="checks">
+            <label class="check"><input id="specialKnowledge" type="checkbox">특수한 지식·기술·자격 요구</label>
+            <label class="check"><input id="technicalService" type="checkbox">설계·감리·PQ 등 기술용역</label>
+            <label class="check"><input id="proposalEvaluation" type="checkbox">제안서·규격 평가 필요</label>
+            <label class="check"><input id="specialConfirmed" type="checkbox">특별기업 추가요건 확인 완료</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="transportFields" class="subpanel hidden">
+      <div class="grid3">
+        <div class="field">
+          <label for="passengerGroup">주요 운송대상</label>
+          <select id="passengerGroup">
+            <option value="KINDERGARTEN">유치원</option>
+            <option value="ELEMENTARY" selected>초등학교</option>
+            <option value="MIDDLE">중학교</option>
+            <option value="HIGH">고등학교</option>
+            <option value="SPECIAL_MIXED">특수학교·연령혼합</option>
+            <option value="MIXED">여러 학교급 혼합</option>
+          </select>
+        </div>
+        <div class="field"><label for="vehicleCount">차량 대수</label><input id="vehicleCount" type="number" min="1" value="1"></div>
+        <div class="field"><label for="seatCapacity">최소 승차정원</label><input id="seatCapacity" type="number" min="1" value="45"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field">
+          <label for="serviceItem">나라장터 세부품명</label>
+          <select id="serviceItem">
+            <option value="SCHOOL_TRANSPORT" selected>통학운송서비스 (7811189902)</option>
+            <option value="OTHER_ROAD_PASSENGER">기타도로여객운송서비스 (7811189904)</option>
+            <option value="UNDETERMINED">아직 미정</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="pricingMethod">계약금액 방식</label>
+          <select id="pricingMethod"><option value="TOTAL">총액계약</option><option value="UNIT">단가계약</option></select>
+        </div>
+        <div class="field"><label for="operationDays">예정 운행일수</label><input id="operationDays" type="number" min="1" max="366" value="190"></div>
+      </div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="driverIncluded" type="checkbox" checked>운전원 포함</label>
+        <label class="check"><input id="attendantIncluded" type="checkbox" checked>동승보호자 포함</label>
+        <label class="check"><input id="regionalRestriction" type="checkbox" checked>지역제한 검토</label>
+      </div>
+    </div>
+
+
+    <div id="goodsFields" class="subpanel hidden">
+      <div class="grid3">
+        <div class="field"><label for="goodsSchoolName">학교명</label><input id="goodsSchoolName" value="○○초등학교"></div>
+        <div class="field"><label for="goodsDeliveryDate">납품기한</label><input id="goodsDeliveryDate" type="date" value="2027-03-15"></div>
+        <div class="field"><label for="goodsBaseAmount">기초금액(원)</label><input id="goodsBaseAmount" type="number" min="1"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="goodsBudgetAmount">예산액(원)</label><input id="goodsBudgetAmount" type="number" min="1"></div>
+        <div class="field"><label for="goodsNoticeNumber">공고번호</label><input id="goodsNoticeNumber" placeholder="예: ○○초-공고-2026-00"></div>
+        <div class="field"><label for="goodsRegionLimit">지역제한</label><input id="goodsRegionLimit" placeholder="예: 충청남도"></div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsQuantity">수량</label><input id="goodsQuantity" placeholder="예: A4 복사용지 500박스"></div>
+        <div class="field"><label for="goodsDeliveryPlace">납품장소</label><input id="goodsDeliveryPlace" value="학교 지정장소"></div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsDetailName">나라장터 세부품명</label><input id="goodsDetailName" placeholder="예: 복사용지"></div>
+        <div class="field"><label for="goodsDetailCode">세부품명번호</label><input id="goodsDetailCode" placeholder="10자리 세부품명번호"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="goodsBidStart">견적·입찰 개시</label><input id="goodsBidStart" placeholder="2026. 10. 1. 10:00"></div>
+        <div class="field"><label for="goodsBidEnd">견적·입찰 마감</label><input id="goodsBidEnd" placeholder="2026. 10. 7. 10:00"></div>
+        <div class="field"><label for="goodsBidOpen">개찰일시</label><input id="goodsBidOpen" placeholder="2026. 10. 7. 11:00"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="goodsSpec">세부규격</label><textarea id="goodsSpec" placeholder="규격, 재질, 성능, 인증조건 등"></textarea></div>
+      <div class="field" style="margin-top:12px"><label for="goodsWarranty">하자·A/S 조건</label><textarea id="goodsWarranty" placeholder="하자보증기간, A/S, 교환조건 등"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="goodsContactName">담당자</label><input id="goodsContactName"></div>
+        <div class="field"><label for="goodsContactPhone">연락처</label><input id="goodsContactPhone"></div>
+      </div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="goodsSmeProduct" type="checkbox">중소기업자간 경쟁제품</label>
+        <label class="check"><input id="goodsDirectProduction" type="checkbox">직접생산확인 대상</label>
+        <label class="check"><input id="goodsPublication" type="checkbox">간행물 구매</label>
+        <label class="check"><input id="goodsUnitPrice" type="checkbox">단가계약</label>
+        <label class="check"><input id="goodsJointSupply" type="checkbox">공동수급 허용</label>
+        <label class="check"><input id="goodsRebid" type="checkbox" checked>재견적·재입찰 허용</label>
+      </div>
+    </div>
+
+    <div id="worksFields" class="subpanel hidden">
+      <div class="grid3">
+        <div class="field"><label for="worksSchoolName">학교명</label><input id="worksSchoolName" value="○○초등학교"></div>
+        <div class="field">
+          <label for="worksType">공사종류</label>
+          <select id="worksType">
+            <option value="GENERAL">종합공사</option>
+            <option value="SPECIALIZED" selected>전문공사</option>
+            <option value="OTHER">전기·통신·소방 등 기타공사</option>
+          </select>
+        </div>
+        <div class="field"><label for="worksBaseAmount">기초금액(원)</label><input id="worksBaseAmount" type="number" min="1"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksBudgetAmount">예산액(원)</label><input id="worksBudgetAmount" type="number" min="1"></div>
+        <div class="field"><label for="worksNoticeNumber">공고번호</label><input id="worksNoticeNumber" placeholder="예: ○○초-공고-2026-00"></div>
+        <div class="field"><label for="worksRegionLimit">지역제한</label><input id="worksRegionLimit" placeholder="예: 충청남도"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksLocation">공사위치</label><input id="worksLocation" placeholder="예: 본관 2층 교실"></div>
+        <div class="field"><label for="worksDays">공사기간(일)</label><input id="worksDays" type="number" min="1" value="30"></div>
+        <div class="field"><label for="worksIndustry">요구 업종·주력분야</label><input id="worksIndustry" placeholder="예: 실내건축공사업"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="worksBidStart">견적·입찰 개시</label><input id="worksBidStart" placeholder="2026. 10. 1. 10:00"></div>
+        <div class="field"><label for="worksBidEnd">견적·입찰 마감</label><input id="worksBidEnd" placeholder="2026. 10. 7. 10:00"></div>
+        <div class="field"><label for="worksBidOpen">개찰일시</label><input id="worksBidOpen" placeholder="2026. 10. 7. 11:00"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="worksScope">공사범위</label><textarea id="worksScope" placeholder="철거, 바닥 교체, 마감 등"></textarea></div>
+      <div class="field" style="margin-top:12px"><label for="worksDesign">설계·내역 요약</label><textarea id="worksDesign" placeholder="설계서 및 내역의 주요내용"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="worksAValue">A값 합계(원)</label><input id="worksAValue" type="number" min="0" placeholder="보험료·퇴직공제·산업안전보건관리비 등 합계"></div>
+        <div class="field"><label for="worksSiteExplanation">현장설명</label><input id="worksSiteExplanation" value="별도의 현장설명은 생략하고 설계서·내역서 열람으로 갈음"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="worksInsuranceBreakdown">법정경비 세부내역</label><textarea id="worksInsuranceBreakdown" placeholder="예: 국민연금 1,000,000원 / 건강보험 800,000원 / 산업안전보건관리비 500,000원"></textarea></div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label for="worksContactName">담당자</label><input id="worksContactName"></div>
+        <div class="field"><label for="worksContactPhone">연락처</label><input id="worksContactPhone"></div>
+      </div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="worksRegion" type="checkbox" checked>지역제한 검토</label>
+        <label class="check"><input id="worksJointSupply" type="checkbox">공동수급 허용</label>
+        <label class="check"><input id="worksRebid" type="checkbox" checked>재견적·재입찰 허용</label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action primary" id="evaluateBtn" type="button">계약방법 분석</button>
+      <button class="action secondary hidden" id="previewBtn" type="button">문서 4종 미리보기</button>
+      <button class="action primary hidden" id="downloadBtn" type="button">HWPX 4종 받기</button>
+      <button class="action tertiary hidden" id="docxDownloadBtn" type="button">DOCX 보조 출력</button>
+    </div>
+    <div id="error" class="error"></div>
+    <div id="statusNote" class="status-note"></div>
+
+    <div id="result" class="result">
+      <div class="summary">
+        <div><h3 id="method"></h3><p id="routeText"></p></div>
+        <span id="status" class="badge"></span>
+      </div>
+      <div class="meta">
+        <div class="meta-box"><small>전자조달</small><b id="designated">-</b></div>
+        <div class="meta-box"><small>낙찰·견적 기준</small><b id="quoteRate">-</b></div>
+        <div class="meta-box"><small>적격심사</small><b id="qualification">-</b></div>
+        <div class="meta-box"><small>어린이통학버스</small><b id="childBus">-</b></div>
+        <div class="meta-box"><small>운송사업 등록</small><b id="industry">-</b></div>
+        <div class="meta-box"><small>지역제한</small><b id="regionRule">-</b></div>
+        <div class="meta-box"><small>세부품명</small><b id="serviceItemResult">-</b></div>
+        <div class="meta-box"><small>직접생산</small><b id="directProduction">-</b></div>
+      </div>
+      <div class="sections">
+        <div class="section"><h4>판정 이유</h4><ul id="reasons"></ul></div>
+        <div class="section"><h4>법적 근거</h4><ul id="legalBases"></ul></div>
+        <div class="section"><h4>담당자 확인사항</h4><ul id="checks"></ul></div>
+        <div class="section warning"><h4>주의사항</h4><ul id="warnings"></ul></div>
+        <div id="documentsBox" class="section hidden"><h4>준비·확인 서류</h4><ul id="documents"></ul></div>
+        <div id="conditionsBox" class="section hidden"><h4>학교 특수조건 후보</h4><ul id="conditions"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="documentPanel" class="panel hidden">
+    <h2>2. 통학차량 문서 생성정보</h2>
+    <p class="hint">비어 있는 항목은 문서에 <b>[입력 필요]</b>로 표시되므로, 판정만 먼저 해보고 나중에 채워도 됩니다.</p>
+
+    <div class="grid4">
+      <div class="field"><label for="schoolName">학교명</label><input id="schoolName" value="○○초등학교"></div>
+      <div class="field"><label for="noticeNumber">공고번호</label><input id="noticeNumber" placeholder="예: ○○초-공고-2026-00"></div>
+      <div class="field"><label for="baseAmount">기초금액(원)</label><input id="baseAmount" type="number" min="1"></div>
+      <div class="field"><label for="budgetAmount">예산액(원)</label><input id="budgetAmount" type="number" min="1"></div>
+    </div>
+
+    <div class="grid4" style="margin-top:12px">
+      <div class="field"><label for="contractStart">계약 시작일</label><input id="contractStart" type="date"></div>
+      <div class="field"><label for="contractEnd">계약 종료일</label><input id="contractEnd" type="date"></div>
+      <div class="field"><label for="regionText">지역제한 문구</label><input id="regionText" placeholder="예: 충청남도"></div>
+      <div class="field"><label for="vehicleYearCondition">차량연식 조건(선택)</label><input id="vehicleYearCondition" placeholder="예: 2022년 이후 출고"></div>
+    </div>
+
+    <div class="grid3" style="margin-top:12px">
+      <div class="field"><label for="bidStart">입찰·견적 제출개시</label><input id="bidStart" placeholder="2026. 10. 1. 10:00"></div>
+      <div class="field"><label for="bidEnd">제출마감</label><input id="bidEnd" placeholder="2026. 10. 7. 10:00"></div>
+      <div class="field"><label for="bidOpen">개찰일시</label><input id="bidOpen" placeholder="2026. 10. 7. 11:00"></div>
+    </div>
+
+    <div class="grid3" style="margin-top:12px">
+      <div class="field"><label for="schoolAddress">학교 주소</label><input id="schoolAddress"></div>
+      <div class="field"><label for="contactName">계약담당자</label><input id="contactName"></div>
+      <div class="field"><label for="contactPhone">연락처</label><input id="contactPhone"></div>
+    </div>
+
+    <div class="checks" style="margin-top:12px">
+      <label class="check"><input id="directVehicle" type="checkbox">회사 소유·직영차량 조건을 문서에 반영</label>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label for="extraNotes">추가 과업조건</label>
+      <textarea id="extraNotes" placeholder="학교에서 별도로 반영할 조건이 있으면 입력"></textarea>
+    </div>
+
+    <div class="subpanel">
+      <div class="subpanel-head">
+        <div>
+          <h3>운행노선</h3>
+          <p>등교·하교 노선을 필요한 만큼 추가할 수 있습니다.</p>
+        </div>
+        <button id="addRouteBtn" class="mini-btn" type="button">+ 노선 추가</button>
+      </div>
+      <div id="routes"></div>
+    </div>
+  </section>
+
+  
+  <section id="qualificationPanel" class="panel hidden">
+    <h2>3. 여객 육상운송용역 적격심사 계산기</h2>
+    <p class="hint">현재는 <b>추정가격 5억원 미만</b>, 2026. 7. 27. 이후 최초 공고하는 여객 육상운송용역 기준입니다. 신인도는 별표 11에서 계산한 최종 가·감점을 입력합니다.</p>
+
+    <div class="grid3">
+      <div class="field"><label for="qualExpectedPrice">예정가격(원)</label><input id="qualExpectedPrice" type="number" min="1" placeholder="예: 165000000"></div>
+      <div class="field"><label for="qualBidPrice">투찰금액(원)</label><input id="qualBidPrice" type="number" min="1" placeholder="예: 148491750"></div>
+      <div class="field"><label for="qualPerformanceBase">이행실적 평가 기준금액(원)</label><input id="qualPerformanceBase" type="number" min="1" placeholder="통상 공고에서 정한 기준금액"></div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div class="field"><label for="qualEquivalent">동등이상용역 이행실적(원)</label><input id="qualEquivalent" type="number" min="0" value="0"></div>
+      <div class="field"><label for="qualSimilar">유사용역 이행실적(원)</label><input id="qualSimilar" type="number" min="0" value="0"></div>
+    </div>
+
+    <div class="grid3" style="margin-top:12px">
+      <div class="field">
+        <label for="qualCredit">경영상태 · 신용평가등급</label>
+        <select id="qualCredit">
+          <option value="A_MINUS_OR_BETTER">A- 이상 · 10점</option>
+          <option value="BBB_PLUS">BBB+ · 9.8점</option>
+          <option value="BBB_ZERO">BBB0 · 9.6점</option>
+          <option value="BBB_MINUS">BBB- · 9.4점</option>
+          <option value="BB_PLUS_OR_ZERO">BB+ / BB0 · 9.2점</option>
+          <option value="BB_MINUS">BB- · 9.0점</option>
+          <option value="B_RANGE">B+, B0, B- · 8.8점</option>
+          <option value="CCC_PLUS_OR_BELOW">CCC+ 이하 · 7.0점</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qualSafety">기술능력 · 교통안전도 등급</label>
+        <select id="qualSafety">
+          <option value="GRADE_1">1등급 · 10점</option>
+          <option value="GRADE_2">2등급 · 8점</option>
+          <option value="GRADE_3">3등급 · 6점</option>
+          <option value="GRADE_4">4등급 · 4점</option>
+          <option value="GRADE_5_OR_E">5등급 / E등급 · 2점</option>
+        </select>
+      </div>
+      <div class="field"><label for="qualReputation">신인도 최종 가·감점</label><input id="qualReputation" type="number" min="-5" max="4.25" step="0.01" value="0"></div>
+    </div>
+
+    <div class="checks" style="margin-top:12px">
+      <label class="check"><input id="qualDisqualification" type="checkbox">결격사유 있음 (-20점)</label>
+    </div>
+
+    <button id="qualCalculateBtn" class="action primary" type="button" style="width:100%;margin-top:14px">적격심사 점수 계산</button>
+    <div id="qualError" class="error"></div>
+
+    <div id="qualResult" class="result">
+      <div class="summary">
+        <div><h3 id="qualStatus">-</h3><p id="qualSummary">-</p></div>
+        <span id="qualPassBadge" class="badge">-</span>
+      </div>
+      <div class="meta">
+        <div class="meta-box"><small>이행실적 / 10</small><b id="qualPerformanceScore">-</b></div>
+        <div class="meta-box"><small>경영상태 / 10</small><b id="qualBusinessScore">-</b></div>
+        <div class="meta-box"><small>안전성 / 10</small><b id="qualSafetyScore">-</b></div>
+        <div class="meta-box"><small>수행능력+신인도 / 30</small><b id="qualAbilityScore">-</b></div>
+        <div class="meta-box"><small>입찰가격 / 70</small><b id="qualPriceScore">-</b></div>
+        <div class="meta-box"><small>결격 감점</small><b id="qualPenalty">-</b></div>
+        <div class="meta-box"><small>총점</small><b id="qualTotal">-</b></div>
+        <div class="meta-box"><small>투찰률</small><b id="qualBidRate">-</b></div>
+      </div>
+      <div class="sections">
+        <div class="section"><h4>계산 내역</h4><ul id="qualReasons"></ul></div>
+        <div class="section warning"><h4>확인사항</h4><ul id="qualWarnings"></ul></div>
+      </div>
+      <p class="foot">※ ‘적격통과 예상’은 입력값 기준 계산결과입니다. 이행실적 인정범위, 신인도 세부항목, 결격사유 및 제출서류는 공고문과 조달청 최신 기준으로 담당자가 최종 확인해야 합니다.</p>
+    </div>
+  </section>
+
+  <section id="previewPanel" class="panel doc-preview hidden">
+
+    <h2>4. 문서 미리보기</h2>
+    <p class="hint">미리보기에서 빈칸과 공고조건을 확인한 뒤 HWPX를 생성하세요.</p>
+    <div id="previewDocs"></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let mode = "general";
+let routeCounter = 0;
+
+
+function parseG2bDate(value) {
+  if (!value) return "";
+  const text = String(value).trim();
+  const digits = text.replace(/\D/g, "");
+  if (digits.length >= 8) {
+    return digits.slice(0,4) + "-" + digits.slice(4,6) + "-" + digits.slice(6,8);
+  }
+  return text.slice(0,10);
+}
+
+function applyG2bCase(data) {
+  const fill = data.autofill || {};
+  if (fill.service_name) $("serviceName").value = fill.service_name;
+  if (fill.estimated_price) $("estimatedPrice").value = fill.estimated_price;
+  if (fill.base_amount) $("baseAmount").value = fill.base_amount;
+  if (fill.region_restriction_text) $("regionText").value = fill.region_restriction_text;
+  if (fill.bid_start) $("bidStart").value = fill.bid_start;
+  if (fill.bid_end) $("bidEnd").value = fill.bid_end;
+  if (fill.bid_open) $("bidOpen").value = fill.bid_open;
+  if (data.demand_institution) $("schoolName").value = data.demand_institution;
+  if (data.notice_datetime) $("plannedDate").value = parseG2bDate(data.notice_datetime);
+
+  const itemNames = (data.items || []).map(item => String(item.detail_product_name || "")).join(" ");
+  if (itemNames.includes("통학운송서비스")) {
+    $("serviceItem").value = "SCHOOL_TRANSPORT";
+  } else if (itemNames.includes("기타도로여객운송서비스")) {
+    $("serviceItem").value = "OTHER_ROAD_PASSENGER";
+  }
+
+  const parts = [
+    data.bid_notice_name || "",
+    data.demand_institution ? "수요기관: " + data.demand_institution : "",
+    data.estimated_price ? "추정가격: " + Number(data.estimated_price).toLocaleString() + "원" : "",
+    data.base_amount ? "기초금액: " + Number(data.base_amount).toLocaleString() + "원" : "",
+    data.region_limit ? "지역: " + data.region_limit : ""
+  ].filter(Boolean);
+  $("g2bSummary").textContent = parts.join(" · ");
+}
+
+$("g2bLoadBtn").onclick = async () => {
+  $("g2bStatus").textContent = "";
+  $("g2bSummary").textContent = "";
+  const bidNo = $("g2bBidNo").value.trim();
+  if (!bidNo) {
+    $("g2bStatus").textContent = "입찰공고번호를 입력해 주세요.";
+    return;
+  }
+  $("g2bStatus").textContent = "나라장터 공고정보를 조회하고 있습니다.";
+  try {
+    const response = await fetch("/api/g2b/service-notice/" + encodeURIComponent(bidNo));
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.detail || "공고 조회에 실패했습니다.");
+    }
+    if (!data.found) {
+      throw new Error(data.message || "용역 공고를 찾지 못했습니다.");
+    }
+    applyG2bCase(data);
+    $("g2bStatus").textContent = "공고정보를 불러와 입력값에 반영했습니다.";
+  } catch (error) {
+    $("g2bStatus").textContent = "오류: " + error.message;
+  }
+};
+
+function setMode(next) {
+  mode = next;
+  $("generalMode").classList.toggle("active", next === "general");
+  $("transportMode").classList.toggle("active", next === "transport");
+  $("goodsMode").classList.toggle("active", next === "goods");
+  $("worksMode").classList.toggle("active", next === "works");
+  $("generalFields").classList.toggle("hidden", next !== "general");
+  $("transportFields").classList.toggle("hidden", next !== "transport");
+  $("goodsFields").classList.toggle("hidden", next !== "goods");
+  $("worksFields").classList.toggle("hidden", next !== "works");
+  $("documentPanel").classList.toggle("hidden", next !== "transport");
+  $("qualificationPanel").classList.toggle("hidden", next !== "transport");
+  const hasDocuments = ["transport","goods","works"].includes(next);
+  $("previewBtn").classList.toggle("hidden", !hasDocuments);
+  $("downloadBtn").classList.toggle("hidden", !hasDocuments);
+  $("docxDownloadBtn").classList.toggle("hidden", next !== "transport");
+  $("previewPanel").classList.add("hidden");
+  $("statusNote").textContent = "";
+  if (next === "transport") {
+    $("serviceName").value = "2027학년도 통학차량 임차용역";
+    $("estimatedPrice").value = "45000000";
+    if (!$("routes").children.length) {
+      addRoute("등교");
+      addRoute("하교");
+    }
+  } else if (next === "goods") {
+    $("serviceName").value = "복사용지 구매";
+    $("estimatedPrice").value = "30000000";
+  } else if (next === "works") {
+    $("serviceName").value = "교실 바닥 교체공사";
+    $("estimatedPrice").value = "80000000";
+  } else {
+    $("serviceName").value = "학교 시설 유지관리 용역";
+    $("estimatedPrice").value = "30000000";
+  }
+}
+
+$("generalMode").onclick = () => setMode("general");
+$("transportMode").onclick = () => setMode("transport");
+$("goodsMode").onclick = () => setMode("goods");
+$("worksMode").onclick = () => setMode("works");
+
+const requestedMode = new URLSearchParams(window.location.search).get("mode");
+if (["general", "transport", "goods", "works"].includes(requestedMode)) {
+  setMode(requestedMode);
+}
+
+function addRoute(direction = "등교") {
+  routeCounter += 1;
+  const row = document.createElement("div");
+  row.className = "route-row";
+  row.dataset.routeId = String(routeCounter);
+  row.innerHTML = `
+    <button class="route-remove" type="button" title="삭제">×</button>
+    <div class="grid3">
+      <div class="field"><label>노선명</label><input class="route-name" value="${routeCounter}호차"></div>
+      <div class="field"><label>구분</label><select class="route-direction"><option ${direction==="등교"?"selected":""}>등교</option><option ${direction==="하교"?"selected":""}>하교</option><option>기타</option></select></div>
+      <div class="field"><label>출발시간</label><input class="route-time" placeholder="예: 07:40"></div>
+    </div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="field"><label>출발</label><input class="route-departure" placeholder="출발지"></div>
+      <div class="field"><label>경유</label><input class="route-via" placeholder="주요 경유지"></div>
+      <div class="field"><label>도착</label><input class="route-destination" value="${direction==="등교" ? $("schoolName").value : ""}" placeholder="도착지"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>비고</label><input class="route-notes" placeholder="요일·학생수·특이사항 등"></div>
+  `;
+  row.querySelector(".route-remove").onclick = () => row.remove();
+  $("routes").appendChild(row);
+}
+
+$("addRouteBtn").onclick = () => addRoute("등교");
+
+function collectRoutes() {
+  return [...document.querySelectorAll(".route-row")].map(row => ({
+    route_name: row.querySelector(".route-name").value.trim() || "미지정 노선",
+    direction: row.querySelector(".route-direction").value,
+    departure: row.querySelector(".route-departure").value.trim(),
+    via: row.querySelector(".route-via").value.trim(),
+    destination: row.querySelector(".route-destination").value.trim(),
+    departure_time: row.querySelector(".route-time").value.trim(),
+    notes: row.querySelector(".route-notes").value.trim()
+  }));
+}
+
+function collectBase() {
+  return {
+    service_name: $("serviceName").value.trim(),
+    estimated_price: Number($("estimatedPrice").value),
+    planned_date: $("plannedDate").value
+  };
+}
+
+function collectTransport() {
+  return {
+    ...collectBase(),
+    passenger_group: $("passengerGroup").value,
+    vehicle_count: Number($("vehicleCount").value),
+    seat_capacity_min: Number($("seatCapacity").value),
+    service_item: $("serviceItem").value,
+    pricing_method: $("pricingMethod").value,
+    operation_days: Number($("operationDays").value) || null,
+    driver_included: $("driverIncluded").checked,
+    attendant_included: $("attendantIncluded").checked,
+    regional_restriction_requested: $("regionalRestriction").checked
+  };
+}
+
+function optionalNumber(id) {
+  const value = Number($(id).value);
+  return value > 0 ? value : null;
+}
+
+function collectDocumentRequest() {
+  return {
+    ...collectTransport(),
+    school_name: $("schoolName").value.trim() || "○○학교",
+    school_address: $("schoolAddress").value.trim(),
+    contact_name: $("contactName").value.trim(),
+    contact_phone: $("contactPhone").value.trim(),
+    notice_number: $("noticeNumber").value.trim(),
+    base_amount: optionalNumber("baseAmount"),
+    budget_amount: optionalNumber("budgetAmount"),
+    contract_start: $("contractStart").value || null,
+    contract_end: $("contractEnd").value || null,
+    region_restriction_text: $("regionText").value.trim(),
+    bid_start: $("bidStart").value.trim(),
+    bid_end: $("bidEnd").value.trim(),
+    bid_open: $("bidOpen").value.trim(),
+    vehicle_year_condition: $("vehicleYearCondition").value.trim(),
+    direct_vehicle_required: $("directVehicle").checked,
+    extra_notes: $("extraNotes").value.trim(),
+    routes: collectRoutes()
+  };
+}
+
+
+function collectGoods() {
+  return {
+    school_name: $("goodsSchoolName").value.trim() || "○○학교",
+    item_name: $("serviceName").value.trim(),
+    estimated_price: Number($("estimatedPrice").value),
+    planned_date: $("plannedDate").value,
+    base_amount: optionalNumber("goodsBaseAmount"),
+    budget_amount: optionalNumber("goodsBudgetAmount"),
+    delivery_date: $("goodsDeliveryDate").value,
+    quantity_text: $("goodsQuantity").value.trim() || "[수량 입력 필요]",
+    specification_text: $("goodsSpec").value.trim() || "[규격 입력 필요]",
+    delivery_place: $("goodsDeliveryPlace").value.trim() || "학교 지정장소",
+    warranty_text: $("goodsWarranty").value.trim() || "[하자·A/S 조건 입력 필요]",
+    inspection_text: "납품 후 규격·수량·품질 검사",
+    notice_number: $("goodsNoticeNumber").value.trim(),
+    bid_start: $("goodsBidStart").value.trim() || "[입력 필요]",
+    bid_end: $("goodsBidEnd").value.trim() || "[입력 필요]",
+    bid_open: $("goodsBidOpen").value.trim() || "[입력 필요]",
+    region_limit: $("goodsRegionLimit").value.trim(),
+    detail_product_name: $("goodsDetailName").value.trim(),
+    detail_product_code: $("goodsDetailCode").value.trim(),
+    contact_name: $("goodsContactName").value.trim(),
+    contact_phone: $("goodsContactPhone").value.trim(),
+    joint_supply_allowed: $("goodsJointSupply").checked,
+    rebid_allowed: $("goodsRebid").checked,
+    is_sme_competition_product: $("goodsSmeProduct").checked,
+    direct_production_applicable: $("goodsDirectProduction").checked,
+    is_publication: $("goodsPublication").checked,
+    unit_price_contract: $("goodsUnitPrice").checked
+  };
+}
+
+function collectWorks() {
+  return {
+    school_name: $("worksSchoolName").value.trim() || "○○학교",
+    work_name: $("serviceName").value.trim(),
+    estimated_price: Number($("estimatedPrice").value),
+    works_type: $("worksType").value,
+    planned_date: $("plannedDate").value,
+    base_amount: optionalNumber("worksBaseAmount"),
+    budget_amount: optionalNumber("worksBudgetAmount"),
+    location: $("worksLocation").value.trim() || "[공사위치 입력 필요]",
+    completion_days: Number($("worksDays").value) || 30,
+    scope_text: $("worksScope").value.trim() || "[공사범위 입력 필요]",
+    required_industry: $("worksIndustry").value.trim(),
+    design_summary: $("worksDesign").value.trim() || "[설계·내역 요약 입력 필요]",
+    safety_text: "산업안전보건법 등 관계법령에 따른 안전조치",
+    notice_number: $("worksNoticeNumber").value.trim(),
+    bid_start: $("worksBidStart").value.trim() || "[입력 필요]",
+    bid_end: $("worksBidEnd").value.trim() || "[입력 필요]",
+    bid_open: $("worksBidOpen").value.trim() || "[입력 필요]",
+    region_limit: $("worksRegionLimit").value.trim(),
+    contact_name: $("worksContactName").value.trim(),
+    contact_phone: $("worksContactPhone").value.trim(),
+    a_value_total: optionalNumber("worksAValue"),
+    insurance_breakdown_text: $("worksInsuranceBreakdown").value.trim() || "[국민연금·건강보험·퇴직공제·산업안전보건관리비 등 세부금액 입력 필요]",
+    site_explanation: $("worksSiteExplanation").value.trim() || "별도의 현장설명은 생략하고 설계서·내역서 열람으로 갈음",
+    joint_supply_allowed: $("worksJointSupply").checked,
+    rebid_allowed: $("worksRebid").checked,
+    region_restriction_requested: $("worksRegion").checked
+  };
+}
+
+function fillList(id, values, emptyText) {
+  const el = $(id);
+  el.innerHTML = "";
+  const list = values && values.length ? values : [emptyText];
+  for (const value of list) {
+    const li = document.createElement("li");
+    li.textContent = value;
+    el.appendChild(li);
+  }
+}
+
+function pct(value) {
+  if (!value) return "해당 없음";
+  return (Math.round(value * 100000) / 1000) + "% 이상";
+}
+
+function renderRule(data) {
+  $("method").textContent = data.contract_method;
+  $("routeText").textContent = "판정코드 · " + data.route_code;
+  $("status").textContent = data.status;
+  $("designated").textContent = data.designated_system_required ? "원칙적 사용" : "필수 아님";
+  $("quoteRate").textContent = pct(data.minimum_quote_rate);
+  $("qualification").textContent = data.qualification_score ? data.qualification_score + "점 이상" : "해당/별도 검토";
+  $("childBus").textContent = data.child_school_bus_status || "해당 없음";
+  $("industry").textContent = data.required_industry_registration || "업무유형별 확인";
+  $("regionRule").textContent = data.regional_restriction_status || data.small_business_restriction || "별도 확인";
+  $("serviceItemResult").textContent = data.service_item_code ? (data.service_item_name + " (" + data.service_item_code + ")") : "해당 없음/미정";
+  $("directProduction").textContent = data.direct_production_status || "해당 없음";
+  fillList("reasons", data.reasons, "별도 판정 이유 없음");
+  fillList("legalBases", data.legal_bases, "추가 근거 확인 필요");
+  fillList("checks", data.required_checks || data.checks, "추가 확인사항 없음");
+  fillList("warnings", data.warnings, "현재 별도 경고 없음");
+  const hasDocs = data.required_documents && data.required_documents.length;
+  $("documentsBox").classList.toggle("hidden", !hasDocs);
+  if (hasDocs) fillList("documents", data.required_documents, "");
+  const hasConditions = data.common_school_conditions && data.common_school_conditions.length;
+  $("conditionsBox").classList.toggle("hidden", !hasConditions);
+  if (hasConditions) fillList("conditions", data.common_school_conditions, "");
+  $("result").classList.add("show");
+}
+
+async function postJson(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(body)
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.detail ? JSON.stringify(data.detail) : "처리에 실패했습니다.");
+  }
+  return data;
+}
+
+$("evaluateBtn").onclick = async () => {
+  $("error").textContent = "";
+  $("statusNote").textContent = "";
+  $("result").classList.remove("show");
+  try {
+    let body, endpoint;
+    if (mode === "general") {
+      body = {
+        ...collectBase(),
+        vendor_category: $("vendorCategory").value,
+        special_entity_requirements_confirmed: $("specialConfirmed").checked,
+        special_knowledge_or_qualification: $("specialKnowledge").checked,
+        technical_service: $("technicalService").checked,
+        requires_proposal_evaluation: $("proposalEvaluation").checked
+      };
+      endpoint = "/api/evaluate";
+    } else if (mode === "transport") {
+      body = collectTransport();
+      endpoint = "/api/evaluate/transport";
+    } else if (mode === "goods") {
+      body = collectGoods();
+      endpoint = "/api/evaluate/goods";
+    } else {
+      body = collectWorks();
+      endpoint = "/api/evaluate/works";
+    }
+    const titleValue = body.service_name || body.item_name || body.work_name;
+    if (!titleValue || !body.estimated_price || !body.planned_date) {
+      throw new Error("건명, 추정가격, 예정일을 입력해 주세요.");
+    }
+    const data = await postJson(endpoint, body);
+    renderRule(data);
+  } catch (error) {
+    $("error").textContent = "오류: " + error.message;
+  }
+};
+
+$("previewBtn").onclick = async () => {
+  $("error").textContent = "";
+  $("statusNote").textContent = "문서를 생성하고 있습니다.";
+  try {
+    let previewEndpoint, previewBody;
+    if (mode === "transport") {
+      previewEndpoint = "/api/documents/transport/preview";
+      previewBody = collectDocumentRequest();
+    } else if (mode === "goods") {
+      previewEndpoint = "/api/documents/goods/preview";
+      previewBody = collectGoods();
+    } else {
+      previewEndpoint = "/api/documents/works/preview";
+      previewBody = collectWorks();
+    }
+    const data = await postJson(previewEndpoint, previewBody);
+    if (data.rule) renderRule(data.rule);
+    $("previewDocs").innerHTML = "";
+    for (const doc of data.documents) {
+      const card = document.createElement("div");
+      card.className = "doc-card";
+      const title = document.createElement("h3");
+      title.textContent = doc.title;
+      const pre = document.createElement("pre");
+      pre.textContent = doc.content;
+      card.appendChild(title);
+      card.appendChild(pre);
+      $("previewDocs").appendChild(card);
+    }
+    $("previewPanel").classList.remove("hidden");
+    $("statusNote").textContent = "문서 4종 미리보기를 생성했습니다.";
+    $("previewPanel").scrollIntoView({behavior: "smooth", block: "start"});
+  } catch (error) {
+    $("statusNote").textContent = "";
+    $("error").textContent = "오류: " + error.message;
+  }
+};
+
+$("docxDownloadBtn").onclick = async () => {
+  $("error").textContent = "";
+  $("statusNote").textContent = "DOCX 보조 문서 묶음을 생성하고 있습니다.";
+  try {
+    const response = await fetch("/api/documents/transport/package", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(collectDocumentRequest())
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail ? JSON.stringify(data.detail) : "문서 생성에 실패했습니다.");
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ddalkkak_transport_docx.zip";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    $("statusNote").textContent = "DOCX 4종 보조 문서 묶음을 생성했습니다.";
+  } catch (error) {
+    $("statusNote").textContent = "";
+    $("error").textContent = "오류: " + error.message;
+  }
+};
+
+$("downloadBtn").onclick = async () => {
+  $("error").textContent = "";
+  $("statusNote").textContent = "HWPX 문서 묶음을 생성하고 있습니다.";
+  try {
+    let packageEndpoint, packageBody, packageName;
+    if (mode === "transport") {
+      packageEndpoint = "/api/documents/transport/package-hwpx";
+      packageBody = collectDocumentRequest();
+      packageName = "ddalkkak_transport_hwpx.zip";
+    } else if (mode === "goods") {
+      packageEndpoint = "/api/documents/goods/package-hwpx";
+      packageBody = collectGoods();
+      packageName = "ddalkkak_goods_hwpx.zip";
+    } else {
+      packageEndpoint = "/api/documents/works/package-hwpx";
+      packageBody = collectWorks();
+      packageName = "ddalkkak_works_hwpx.zip";
+    }
+    const response = await fetch(packageEndpoint, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(packageBody)
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail ? JSON.stringify(data.detail) : "문서 생성에 실패했습니다.");
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = packageName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    $("statusNote").textContent = "HWPX 4종 문서 묶음을 생성했습니다.";
+  } catch (error) {
+    $("statusNote").textContent = "";
+    $("error").textContent = "오류: " + error.message;
+  }
+};
+
+function collectQualificationRequest() {
+  return {
+    estimated_price: Number($("estimatedPrice").value),
+    planned_date: $("plannedDate").value,
+    expected_price: Number($("qualExpectedPrice").value),
+    bid_price: Number($("qualBidPrice").value),
+    performance_base_amount: Number($("qualPerformanceBase").value),
+    equivalent_performance_amount: Number($("qualEquivalent").value) || 0,
+    similar_performance_amount: Number($("qualSimilar").value) || 0,
+    credit_rating: $("qualCredit").value,
+    safety_grade: $("qualSafety").value,
+    reputation_score: Number($("qualReputation").value) || 0,
+    disqualification_reason: $("qualDisqualification").checked
+  };
+}
+
+$("qualCalculateBtn").onclick = async () => {
+  $("qualError").textContent = "";
+  $("qualResult").classList.remove("show");
+  try {
+    const body = collectQualificationRequest();
+    if (!body.estimated_price || !body.expected_price || !body.bid_price || !body.performance_base_amount) {
+      throw new Error("추정가격, 예정가격, 투찰금액, 이행실적 평가 기준금액을 입력해 주세요.");
+    }
+    const data = await postJson("/api/qualification/transport", body);
+    $("qualStatus").textContent = data.status;
+    $("qualPassBadge").textContent = data.passed ? "88점 이상 · 통과" : "미달 또는 확인 필요";
+    $("qualSummary").textContent =
+      "투찰률 " + data.bid_rate_percent.toFixed(4) + "% · 하한율 " +
+      data.minimum_bid_rate_percent.toFixed(3) + "% · 통과기준 " + data.pass_score + "점";
+    $("qualPerformanceScore").textContent = data.performance_score.toFixed(2) + "점";
+    $("qualBusinessScore").textContent = data.business_score.toFixed(2) + "점";
+    $("qualSafetyScore").textContent = data.safety_score.toFixed(2) + "점";
+    $("qualAbilityScore").textContent =
+      data.ability_score_after_reputation.toFixed(2) + "점" +
+      (data.reputation_applied ? " (신인도 " + (data.reputation_applied > 0 ? "+" : "") + data.reputation_applied.toFixed(2) + ")" : "");
+    $("qualPriceScore").textContent = data.price_score.toFixed(2) + "점";
+    $("qualPenalty").textContent = data.disqualification_penalty.toFixed(2) + "점";
+    $("qualTotal").textContent = data.total_score.toFixed(2) + "점";
+    $("qualBidRate").textContent =
+      data.bid_rate_percent.toFixed(4) + "%" +
+      (data.meets_minimum_bid_rate ? " · 충족" : " · 미달");
+    fillList("qualReasons", data.reasons, "계산내역 없음");
+    fillList("qualWarnings", data.warnings, "별도 경고 없음");
+    $("qualResult").classList.add("show");
+  } catch (error) {
+    $("qualError").textContent = "오류: " + error.message;
+  }
+};
+
+</script>
+</body>
+</html>
