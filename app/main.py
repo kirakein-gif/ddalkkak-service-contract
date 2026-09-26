@@ -64,7 +64,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 계약업무",
     description="학교 공사·용역·물품 계약업무 지원 웹도구",
-    version="0.14.0",
+    version="0.15.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -375,7 +375,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.14.0",
+        "version": "0.15.0",
     }
 
 
