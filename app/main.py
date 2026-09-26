@@ -1,10 +1,11 @@
 from dataclasses import asdict
 from datetime import date
+import os
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,6 +30,7 @@ from app.rules.transport import (
     TransportServiceItem,
     evaluate_transport,
 )
+from app.services.g2b import G2BAPIError, G2BClient, G2BClientConfig
 from app.rules.transport_qualification import (
     CreditRating,
     QualificationInput,
@@ -42,7 +44,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.6.0",
+    version="0.6.1",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -185,8 +187,29 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.6.0",
+        "version": "0.6.1",
     }
+
+
+@app.get("/api/g2b/service-notice/{bid_notice_no}")
+async def get_g2b_service_notice(bid_notice_no: str) -> dict:
+    service_key = os.getenv("DATA_GO_KR_SERVICE_KEY", "").strip()
+    if not service_key:
+        raise HTTPException(
+            status_code=503,
+            detail="공공데이터포털 인증키(DATA_GO_KR_SERVICE_KEY)가 설정되지 않았습니다.",
+        )
+    config = G2BClientConfig(
+        service_key=service_key,
+        base_url=os.getenv(
+            "DATA_GO_KR_BASE_URL",
+            "https://apis.data.go.kr/1230000/ad/BidPublicInfoService",
+        ),
+    )
+    try:
+        return await G2BClient(config).get_service_case(bid_notice_no.strip())
+    except (G2BAPIError, httpx.HTTPError) as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/api/evaluate")
