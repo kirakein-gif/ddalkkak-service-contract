@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "effective_from": "2026-07-27",
+  "scope": "조달청 일반용역 적격심사 세부기준 별표 5 - 여객 육상운송용역, 추정가격 5억원 미만",
+  "pass_score": 88,
+  "minimum_bid_rate": 0.89995,
+  "scores": {
+    "performance": 10,
+    "business": 10,
+    "safety": 10,
+    "ability_total": 30,
+    "price": 70,
+    "reputation": {"min": -5.0, "max": 4.25},
+    "disqualification": -20
+  },
+  "performance_grades": {
+    "equivalent": [
+      {"min_ratio": 100, "score": 10},
+      {"min_ratio": 70, "score": 9},
+      {"min_ratio": 40, "score": 8},
+      {"min_ratio": 10, "score": 7},
+      {"min_ratio": 0, "score": 0}
+    ],
+    "similar": [
+      {"min_ratio": 100, "score": 3},
+      {"min_ratio": 70, "score": 2},
+      {"min_ratio": 40, "score": 1},
+      {"min_ratio": 10, "score": 0.5},
+      {"min_ratio": 0, "score": 0}
+    ],
+    "combined_cap": 10
+  },
+  "credit_scores": {
+    "A_MINUS_OR_BETTER": 10,
+    "BBB_PLUS": 9.8,
+    "BBB_ZERO": 9.6,
+    "BBB_MINUS": 9.4,
+    "BB_PLUS_OR_ZERO": 9.2,
+    "BB_MINUS": 9.0,
+    "B_RANGE": 8.8,
+    "CCC_PLUS_OR_BELOW": 7.0
+  },
+  "safety_scores": {
+    "GRADE_1": 10,
+    "GRADE_2": 8,
+    "GRADE_3": 6,
+    "GRADE_4": 4,
+    "GRADE_5_OR_E": 2
+  },
+  "price_formula": "70 - 4 * abs(93 - rounded_bid_rate_percent)",
+  "price_ratio_rounding": "입찰가격/예정가격 비율을 소수점 다섯째 자리에서 반올림",
+  "price_upper_cap_ratio": 0.96,
+  "price_score_at_or_above_cap": 58,
+  "note": "신인도 세부항목은 별표 11이 복잡하므로 v0.5에서는 최종 가감점을 입력받고 수행능력 배점한도 규칙만 자동 적용한다."
+}
