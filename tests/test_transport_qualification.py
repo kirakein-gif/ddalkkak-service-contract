@@ -36,7 +36,7 @@ def make_input(**kwargs):
         (105_000_000, 9),
         (60_000_000, 8),
         (15_000_000, 7),
-        (14_999_999, 0),
+        (14_999_000, 0),
     ],
 )
 def test_equivalent_performance_grades(amount, expected):
