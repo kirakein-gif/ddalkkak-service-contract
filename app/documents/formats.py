@@ -311,6 +311,12 @@ def _add_summary_table(
 def _render_notice_hwpx(item: GeneratedDocument) -> bytes:
     document = HwpxDocument.new()
 
+    # 문자서식에서 폰트 이름만 참조하면 한/글이 기본글꼴로 대체할 수 있으므로
+    # HWPX 헤더의 7개 언어 fontface 블록에 실제 서체를 명시적으로 등록한다.
+    # 글꼴 파일을 임베드하지 않고, 미설치 환경을 위한 대체 서체만 함께 선언한다.
+    document.styles.ensure_font("휴먼명조", subst_face="함초롬바탕")
+    document.styles.ensure_font("휴먼고딕", subst_face="맑은 고딕")
+
     # 충남교육청 공고 PDF의 A4 본문 폭과 유사한 약 20 mm 좌우 여백.
     section = document.sections[0]
     section.properties.set_page_margins(
