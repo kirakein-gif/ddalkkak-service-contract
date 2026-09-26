@@ -5,6 +5,8 @@ from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
+import httpx
+
 from fastapi import FastAPI, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import FileResponse, StreamingResponse
