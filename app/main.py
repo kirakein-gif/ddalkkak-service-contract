@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from datetime import date
+from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
 
@@ -27,6 +28,12 @@ from app.rules.transport import (
     TransportServiceItem,
     evaluate_transport,
 )
+from app.rules.transport_qualification import (
+    CreditRating,
+    QualificationInput,
+    SafetyGrade,
+    calculate_transport_qualification,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -34,7 +41,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -64,6 +71,19 @@ class TransportEvaluateRequest(BaseModel):
     driver_included: bool = True
     attendant_included: bool = False
     regional_restriction_requested: bool = True
+
+
+class TransportQualificationRequest(BaseModel):
+    estimated_price: int = Field(gt=0, lt=500_000_000)
+    expected_price: int = Field(gt=0)
+    bid_price: int = Field(gt=0)
+    performance_base_amount: int = Field(gt=0)
+    equivalent_performance_amount: int = Field(default=0, ge=0)
+    similar_performance_amount: int = Field(default=0, ge=0)
+    credit_rating: CreditRating = CreditRating.A_MINUS_OR_BETTER
+    safety_grade: SafetyGrade = SafetyGrade.GRADE_1
+    reputation_score: Decimal = Field(default=Decimal("0"), ge=Decimal("-5"), le=Decimal("4.25"))
+    disqualification_reason: bool = False
 
 
 class RouteRequest(BaseModel):
@@ -163,7 +183,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.4.0",
+        "version": "0.5.0",
     }
 
 
@@ -187,6 +207,27 @@ def evaluate(request: EvaluateRequest) -> dict:
 @app.post("/api/evaluate/transport")
 def evaluate_school_transport(request: TransportEvaluateRequest) -> dict:
     result = evaluate_transport(_to_transport_input(request))
+    return jsonable_encoder(asdict(result))
+
+
+@app.post("/api/qualification/transport")
+def calculate_school_transport_qualification(
+    request: TransportQualificationRequest,
+) -> dict:
+    result = calculate_transport_qualification(
+        QualificationInput(
+            estimated_price=request.estimated_price,
+            expected_price=request.expected_price,
+            bid_price=request.bid_price,
+            performance_base_amount=request.performance_base_amount,
+            equivalent_performance_amount=request.equivalent_performance_amount,
+            similar_performance_amount=request.similar_performance_amount,
+            credit_rating=request.credit_rating,
+            safety_grade=request.safety_grade,
+            reputation_score=request.reputation_score,
+            disqualification_reason=request.disqualification_reason,
+        )
+    )
     return jsonable_encoder(asdict(result))
 
 
