@@ -28,7 +28,7 @@ class TravelDocumentData:
     proposal_evaluation_datetime: str = "[입력 필요]"
     bid_open_datetime: str = "[입력 필요]"
     region_limit: str = ""
-    itinerary_text: str = "[세부일정 입력 필요]"
+    itinerary_text: str = "[세부일정 입력 필요]"\n    tie_break_method: str = "[학교가 공고 전에 확정: 동일가격 처리기준]"\n    contract_deadline_text: str = "[학교가 공고에서 정한 계약체결 기한]"\n    cost_breakdown_required: bool = True
 
 
 def _money(value: int | None) -> str:
@@ -64,9 +64,10 @@ def build_travel_documents(
 ## 2. 입찰 및 낙찰방법
 - {two_stage.contract_method}
 - 근거: {two_stage.legal_basis}
-- 제안서 적격기준: {two_stage.proposal_pass_score:g}점 이상(학교가 확정한 평가기준)
+- 규격입찰서(제안서)는 학교가 정한 장소에 직접 제출하고, 가격입찰서는 나라장터(G2B) 전자입찰로 제출한다.
+- 제안서 적격기준: {two_stage.proposal_pass_score:g}점 이상(학교가 공고 전에 확정한 평가기준)
 - 규격적격자에 한해 가격입찰서를 개찰한다.
-- 가격개찰 후 예정가격 이하 최저가격 제출자 등 공고에서 정한 기준으로 낙찰자를 결정한다.
+- 가격개찰 후 예정가격 이하 최저가격 제출자를 낙찰자로 결정하는 방식을 기본 검토한다.
 
 ## 3. 참가자격
 - 지방계약 관계 법령상 입찰참가자격을 갖춘 자
@@ -76,10 +77,12 @@ def build_travel_documents(
 {f'- 지역제한: {data.region_limit}' if data.region_limit else ''}
 
 ## 4. 제안서 및 가격입찰
-- 제안서 제출처: {data.proposal_submit_place}
+- 제안서 제출처: {data.proposal_submit_place} 직접 제출
 - 제안서 평가: {data.proposal_evaluation_datetime}
-- 가격입찰: 나라장터(G2B)
+- 가격입찰: 나라장터(G2B) 전자입찰
+- 가격입찰서 제출 여부는 나라장터의 보낸 문서함에서 확인한다.
 - 가격개찰: {data.bid_open_datetime}
+- 가격개찰은 제안서 평가 완료 후 실시하며 평가 일정에 따라 개찰시각이 지연될 수 있다.
 
 ## 5. 제안서 평가의 주요내용
 - 최근 학생 체험학습·수학여행 수행실적
@@ -93,9 +96,23 @@ def build_travel_documents(
 
 ※ 세부 배점은 학교가 제안요청서에서 확정한다.
 
-## 6. 유의사항
+## 6. 예정가격 및 낙찰자 결정
+- 예정가격은 기초금액의 ±3% 범위에서 복수예비가격 15개를 작성하고, 입찰참가자가 선택한 결과에 따라 4개를 추첨·산술평균하는 나라장터 방식의 적용 여부를 확인한다.
+- 규격적격자에 한하여 가격개찰을 실시한다.
+- 예정가격 이하 최저가격 제출자 중에서 낙찰자를 결정한다.
+- 동일가격 최저가 입찰자가 2인 이상인 경우 처리방법: {data.tie_break_method}
+- 계약체결 기한: {data.contract_deadline_text}
+
+## 7. 계약금액·정산
+- 예정인원은 실제 참가신청, 면제대상, 학교사정 등에 따라 증감될 수 있다.
+- {('계약체결 시 학생·교직원을 구분하고 차량료·숙박료·식비·입장료·보험료·수수료 등 항목별 산출내역서를 제출한다.' if data.cost_breakdown_required else '산출내역서 제출 여부는 공고조건에 따른다.')}
+- 면세사업자가 입찰하는 경우 부가가치세 포함 투찰 및 계약 시 부가가치세 상당액 조정 여부를 관계규정과 공고조건에 따라 확인한다.
+- 실제 참가인원 증감 시 공고·계약에서 정한 1인당 단가 또는 승인된 산출내역 기준으로 정산한다.
+
+## 8. 유의사항
 - 참가인원 증감에 따른 정산방식을 특수조건에 명확히 정한다.
 - 항공·선박·숙박·차량·입장료 등 취소수수료 부담기준을 사전에 정한다.
+- 동일가격 처리방식과 계약체결 기한은 학교별 공고사례가 달라 자동 고정하지 않는다.
 - 최종 공고 전 관광진흥법령, 지방계약법령 및 교육청 현장체험학습 안전지침을 확인한다.
 """
 
