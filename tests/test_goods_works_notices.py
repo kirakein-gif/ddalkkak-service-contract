@@ -199,3 +199,52 @@ def test_competitive_goods_and_works_notice_titles_change():
     assert goods_docs[0].title.endswith("물품 구매 전자입찰 공고")
     assert works_docs[0].title.endswith("공사 전자입찰 공고")
     assert "적격심사" in works_docs[0].content
+
+
+
+def test_notice_hwpx_matches_chungnam_layout_profile():
+    rule = evaluate_goods(GoodsInput("복사용지 구매", 30_000_000))
+    notice = build_goods_documents(
+        GoodsDocumentData(
+            school_name="○○초등학교",
+            item_name="복사용지 구매",
+            start_date=None,
+            notice_date=date(2027, 2, 15),
+            delivery_date=date(2027, 3, 31),
+            estimated_price=30_000_000,
+            base_amount=33_000_000,
+            notice_number="○○초등학교 공고 제2027-1호",
+            bid_start="2027. 2. 20. 10:00",
+            bid_end="2027. 2. 24. 10:00",
+            bid_open="2027. 2. 24. 11:00",
+        ),
+        rule,
+    )[0]
+
+    payload = document_to_hwpx_bytes(notice)
+    with ZipFile(BytesIO(payload)) as archive:
+        header_name = next(name for name in archive.namelist() if name.endswith("header.xml"))
+        section_name = next(name for name in archive.namelist() if name.endswith("section0.xml"))
+        header_xml = archive.read(header_name).decode("utf-8")
+        section_xml = archive.read(section_name).decode("utf-8")
+        root = ET.fromstring(section_xml)
+
+        # 충남교육청 공고문을 기준으로 한 명조/고딕 계열 조합.
+        assert "휴먼명조" in header_xml
+        assert "휴먼고딕" in header_xml
+
+        # A4 좌우 약 20mm, 상단 18mm, 하단 15mm 조판값.
+        assert 'left="5669"' in section_xml
+        assert 'right="5669"' in section_xml
+        assert 'top="5102"' in section_xml
+        assert 'bottom="4252"' in section_xml
+
+        tables = [e for e in root.iter() if e.tag.rsplit("}", 1)[-1] == "tbl"]
+        assert len(tables) >= 3  # 안내박스 + 청렴계약박스 + 핵심정보표
+        assert any(table.get("colCnt") == "4" for table in tables)
+
+    with HwpxDocument.open(BytesIO(payload)) as hwpx:
+        exported = hwpx.export_text()
+        assert "< 본 계약은 청렴계약(서약)제가 적용됩니다 >" in exported
+        assert "위와 같이 공고합니다." in exported
+        assert "○○초등학교장" in exported
