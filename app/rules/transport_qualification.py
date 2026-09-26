@@ -70,10 +70,10 @@ SAFETY_SCORES = {
 @dataclass(slots=True)
 class QualificationInput:
     estimated_price: int
-    planned_date: date = QUALIFICATION_RULE_EFFECTIVE_FROM
     expected_price: int
     bid_price: int
     performance_base_amount: int
+    planned_date: date = QUALIFICATION_RULE_EFFECTIVE_FROM
     equivalent_performance_amount: int = 0
     similar_performance_amount: int = 0
     credit_rating: CreditRating = CreditRating.A_MINUS_OR_BETTER
