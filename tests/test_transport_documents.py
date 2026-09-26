@@ -3,12 +3,14 @@ from io import BytesIO
 from zipfile import ZipFile
 
 from docx import Document
+from hwpx import HwpxDocument
 
 from app.documents.transport_docs import (
     RouteEntry,
     TransportDocumentData,
     build_transport_documents,
     build_transport_docx_zip,
+    build_transport_hwpx_zip,
 )
 from app.rules.transport import (
     PassengerGroup,
@@ -98,3 +100,19 @@ def test_builds_zip_with_four_openable_docx_files() -> None:
         text = "\n".join(p.text for p in first_doc.paragraphs)
         assert "통학차량" in text
         assert "○○초등학교" in text
+
+
+
+def test_builds_zip_with_four_openable_hwpx_files() -> None:
+    rule, data = build_sample()
+    documents = build_transport_documents(data, rule)
+    payload = build_transport_hwpx_zip(documents)
+
+    with ZipFile(BytesIO(payload)) as archive:
+        names = archive.namelist()
+        assert len(names) == 4
+        assert all(name.endswith(".hwpx") for name in names)
+
+        raw = archive.read(names[0])
+        with HwpxDocument.open(BytesIO(raw)) as hwpx:
+            assert len(hwpx.sections) >= 1
