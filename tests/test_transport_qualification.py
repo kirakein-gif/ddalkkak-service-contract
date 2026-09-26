@@ -131,3 +131,12 @@ def test_500m_or_more_not_supported_yet():
         calculate_transport_qualification(
             make_input(estimated_price=500_000_000)
         )
+
+
+def test_pre_reform_notice_date_is_rejected():
+    from datetime import date
+
+    with pytest.raises(ValueError):
+        calculate_transport_qualification(
+            make_input(planned_date=date(2026, 7, 26))
+        )
