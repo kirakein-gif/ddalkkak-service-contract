@@ -68,3 +68,44 @@ def test_transport_package_api_returns_zip_with_four_docx() -> None:
         names = archive.namelist()
         assert len(names) == 4
         assert all(name.endswith(".docx") for name in names)
+
+
+def test_transport_qualification_api_passes_at_current_floor_with_full_ability() -> None:
+    response = client.post(
+        "/api/qualification/transport",
+        json={
+            "estimated_price": 150000000,
+            "expected_price": 165000000,
+            "bid_price": 148491750,
+            "performance_base_amount": 150000000,
+            "equivalent_performance_amount": 150000000,
+            "similar_performance_amount": 0,
+            "credit_rating": "A_MINUS_OR_BETTER",
+            "safety_grade": "GRADE_1",
+            "reputation_score": 0,
+            "disqualification_reason": False,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["passed"] is True
+    assert body["bid_rate_percent"] == 89.995
+    assert body["price_score"] == 58.0
+    assert body["ability_score_after_reputation"] == 30.0
+    assert body["total_score"] == 88.0
+
+
+def test_transport_qualification_api_rejects_500m_band() -> None:
+    response = client.post(
+        "/api/qualification/transport",
+        json={
+            "estimated_price": 500000000,
+            "expected_price": 550000000,
+            "bid_price": 500000000,
+            "performance_base_amount": 500000000,
+            "equivalent_performance_amount": 500000000,
+            "credit_rating": "A_MINUS_OR_BETTER",
+            "safety_grade": "GRADE_1",
+        },
+    )
+    assert response.status_code == 422
