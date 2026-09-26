@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.8.0",
+    version="0.9.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -111,12 +111,24 @@ class GoodsRequest(BaseModel):
     estimated_price: int = Field(gt=0)
     planned_date: date = date(2026, 7, 1)
     base_amount: int | None = Field(default=None, gt=0)
+    budget_amount: int | None = Field(default=None, gt=0)
     delivery_date: date
     quantity_text: str = Field(default="[수량 입력 필요]", max_length=5000)
     specification_text: str = Field(default="[규격 입력 필요]", max_length=10000)
     delivery_place: str = Field(default="학교 지정장소", max_length=1000)
     warranty_text: str = Field(default="[하자·A/S 조건 입력 필요]", max_length=3000)
     inspection_text: str = Field(default="납품 후 규격·수량·품질 검사", max_length=3000)
+    notice_number: str = Field(default="", max_length=100)
+    bid_start: str = Field(default="[입력 필요]", max_length=100)
+    bid_end: str = Field(default="[입력 필요]", max_length=100)
+    bid_open: str = Field(default="[입력 필요]", max_length=100)
+    region_limit: str = Field(default="", max_length=200)
+    detail_product_name: str = Field(default="", max_length=300)
+    detail_product_code: str = Field(default="", max_length=30)
+    contact_name: str = Field(default="", max_length=100)
+    contact_phone: str = Field(default="", max_length=50)
+    joint_supply_allowed: bool = False
+    rebid_allowed: bool = True
     is_sme_competition_product: bool = False
     direct_production_applicable: bool = False
     is_publication: bool = False
@@ -130,12 +142,25 @@ class WorksRequest(BaseModel):
     works_type: WorksType
     planned_date: date = date(2026, 7, 1)
     base_amount: int | None = Field(default=None, gt=0)
+    budget_amount: int | None = Field(default=None, gt=0)
     location: str = Field(default="[공사위치 입력 필요]", max_length=1000)
     completion_days: int = Field(default=30, gt=0, le=3650)
     scope_text: str = Field(default="[공사범위 입력 필요]", max_length=10000)
     required_industry: str = Field(default="", max_length=1000)
     design_summary: str = Field(default="[설계·내역 요약 입력 필요]", max_length=10000)
     safety_text: str = Field(default="산업안전보건법 등 관계법령에 따른 안전조치", max_length=3000)
+    notice_number: str = Field(default="", max_length=100)
+    bid_start: str = Field(default="[입력 필요]", max_length=100)
+    bid_end: str = Field(default="[입력 필요]", max_length=100)
+    bid_open: str = Field(default="[입력 필요]", max_length=100)
+    region_limit: str = Field(default="", max_length=200)
+    contact_name: str = Field(default="", max_length=100)
+    contact_phone: str = Field(default="", max_length=50)
+    a_value_total: int | None = Field(default=None, ge=0)
+    insurance_breakdown_text: str = Field(default="[국민연금·건강보험·퇴직공제·산업안전보건관리비 등 세부금액 입력 필요]", max_length=5000)
+    site_explanation: str = Field(default="별도의 현장설명은 생략하고 설계서·내역서 열람으로 갈음", max_length=1000)
+    joint_supply_allowed: bool = False
+    rebid_allowed: bool = True
     region_restriction_requested: bool = True
 
 
@@ -331,7 +356,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.8.0",
+        "version": "0.9.0",
     }
 
 
@@ -440,11 +465,23 @@ def preview_goods_documents(request: GoodsRequest) -> dict:
             delivery_date=request.delivery_date,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            budget_amount=request.budget_amount,
             quantity_text=request.quantity_text,
             specification_text=request.specification_text,
             delivery_place=request.delivery_place,
             warranty_text=request.warranty_text,
             inspection_text=request.inspection_text,
+            notice_number=request.notice_number,
+            bid_start=request.bid_start,
+            bid_end=request.bid_end,
+            bid_open=request.bid_open,
+            region_limit=request.region_limit,
+            detail_product_name=request.detail_product_name,
+            detail_product_code=request.detail_product_code,
+            contact_name=request.contact_name,
+            contact_phone=request.contact_phone,
+            joint_supply_allowed=request.joint_supply_allowed,
+            rebid_allowed=request.rebid_allowed,
         ),
         rule,
     )
@@ -475,11 +512,23 @@ def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
             delivery_date=request.delivery_date,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            budget_amount=request.budget_amount,
             quantity_text=request.quantity_text,
             specification_text=request.specification_text,
             delivery_place=request.delivery_place,
             warranty_text=request.warranty_text,
             inspection_text=request.inspection_text,
+            notice_number=request.notice_number,
+            bid_start=request.bid_start,
+            bid_end=request.bid_end,
+            bid_open=request.bid_open,
+            region_limit=request.region_limit,
+            detail_product_name=request.detail_product_name,
+            detail_product_code=request.detail_product_code,
+            contact_name=request.contact_name,
+            contact_phone=request.contact_phone,
+            joint_supply_allowed=request.joint_supply_allowed,
+            rebid_allowed=request.rebid_allowed,
         ),
         rule,
     )
@@ -522,10 +571,23 @@ def preview_works_documents(request: WorksRequest) -> dict:
             completion_days=request.completion_days,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            budget_amount=request.budget_amount,
             scope_text=request.scope_text,
             required_industry=request.required_industry,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
+            notice_number=request.notice_number,
+            bid_start=request.bid_start,
+            bid_end=request.bid_end,
+            bid_open=request.bid_open,
+            region_limit=request.region_limit,
+            contact_name=request.contact_name,
+            contact_phone=request.contact_phone,
+            a_value_total=request.a_value_total,
+            insurance_breakdown_text=request.insurance_breakdown_text,
+            site_explanation=request.site_explanation,
+            joint_supply_allowed=request.joint_supply_allowed,
+            rebid_allowed=request.rebid_allowed,
         ),
         rule,
     )
@@ -555,10 +617,23 @@ def package_works_documents(request: WorksRequest) -> StreamingResponse:
             completion_days=request.completion_days,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            budget_amount=request.budget_amount,
             scope_text=request.scope_text,
             required_industry=request.required_industry,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
+            notice_number=request.notice_number,
+            bid_start=request.bid_start,
+            bid_end=request.bid_end,
+            bid_open=request.bid_open,
+            region_limit=request.region_limit,
+            contact_name=request.contact_name,
+            contact_phone=request.contact_phone,
+            a_value_total=request.a_value_total,
+            insurance_breakdown_text=request.insurance_breakdown_text,
+            site_explanation=request.site_explanation,
+            joint_supply_allowed=request.joint_supply_allowed,
+            rebid_allowed=request.rebid_allowed,
         ),
         rule,
     )
