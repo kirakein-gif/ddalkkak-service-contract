@@ -64,7 +64,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 계약업무",
     description="학교 공사·용역·물품 계약업무 지원 웹도구",
-    version="0.15.0",
+    version="0.16.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -218,10 +218,21 @@ class ProgramDocumentRequest(BaseModel):
     instructor_cost_included: bool = True
     material_cost_separate: bool = True
     actual_settlement: bool = True
-    proposal_pass_score: float = Field(default=80, gt=0, le=100)
+    proposal_pass_score: float = Field(default=85, gt=0, le=100)
     proposal_evaluation_datetime: str = Field(default="[입력 필요]", max_length=100)
     bid_open_datetime: str = Field(default="[입력 필요]", max_length=100)
     region_limit: str = Field(default="", max_length=200)
+    proposal_submit_place: str = Field(default="학교 행정실", max_length=200)
+    proposal_submission_method: str = Field(default="직접 방문 제출(우편·FAX 불가)", max_length=300)
+    tie_break_method: str = Field(default="제안서 평가점수 높은 업체 우선, 제안서 점수도 같으면 전자조달시스템 자동추첨(학교 공고 전 확정)", max_length=500)
+    contract_deadline_text: str = Field(default="[학교가 공고 전에 확정]", max_length=300)
+    business_scope_requirement: str = Field(default="사업자등록증 또는 정관에 방과후학교·늘봄학교 또는 교육 관련 사업 내용이 포함된 기관", max_length=500)
+    recent_performance_requirement: str = Field(default="", max_length=500)
+    small_business_eligibility_text: str = Field(default="[공고 금액·대상에 따라 중소기업자간 제한 및 비영리법인 예외 여부 확인]", max_length=500)
+    labor_cost_ratio_percent: float | None = Field(default=None, ge=0, le=100)
+    joint_supply_allowed: bool = False
+    electronic_contract: bool = True
+    change_contract_on_quantity_change: bool = True
 
 
 class FacilityDocumentRequest(BaseModel):
@@ -375,7 +386,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.15.0",
+        "version": "0.16.0",
     }
 
 
@@ -828,6 +839,17 @@ def preview_program_documents(request: ProgramDocumentRequest) -> dict:
             proposal_evaluation_datetime=request.proposal_evaluation_datetime,
             bid_open_datetime=request.bid_open_datetime,
             region_limit=request.region_limit,
+            proposal_submit_place=request.proposal_submit_place,
+            proposal_submission_method=request.proposal_submission_method,
+            tie_break_method=request.tie_break_method,
+            contract_deadline_text=request.contract_deadline_text,
+            business_scope_requirement=request.business_scope_requirement,
+            recent_performance_requirement=request.recent_performance_requirement,
+            small_business_eligibility_text=request.small_business_eligibility_text,
+            labor_cost_ratio_percent=request.labor_cost_ratio_percent,
+            joint_supply_allowed=request.joint_supply_allowed,
+            electronic_contract=request.electronic_contract,
+            change_contract_on_quantity_change=request.change_contract_on_quantity_change,
         ),
         rule,
     )
@@ -864,6 +886,17 @@ def package_program_documents(request: ProgramDocumentRequest) -> StreamingRespo
             proposal_evaluation_datetime=request.proposal_evaluation_datetime,
             bid_open_datetime=request.bid_open_datetime,
             region_limit=request.region_limit,
+            proposal_submit_place=request.proposal_submit_place,
+            proposal_submission_method=request.proposal_submission_method,
+            tie_break_method=request.tie_break_method,
+            contract_deadline_text=request.contract_deadline_text,
+            business_scope_requirement=request.business_scope_requirement,
+            recent_performance_requirement=request.recent_performance_requirement,
+            small_business_eligibility_text=request.small_business_eligibility_text,
+            labor_cost_ratio_percent=request.labor_cost_ratio_percent,
+            joint_supply_allowed=request.joint_supply_allowed,
+            electronic_contract=request.electronic_contract,
+            change_contract_on_quantity_change=request.change_contract_on_quantity_change,
         ),
         rule,
     )
