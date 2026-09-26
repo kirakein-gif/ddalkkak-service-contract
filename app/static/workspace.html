@@ -137,10 +137,10 @@
 <body>
 <main class="wrap">
   <section class="hero">
-    <div class="brand">DDALKKAK · SCHOOL SERVICE CONTRACT</div>
+    <div class="brand">DDALKKAK · SCHOOL CONTRACT</div>
     <h1>딸깍 계약업무</h1>
-    <p class="desc">학교 용역의 계약방법을 검토하고, 통학차량은 공고문·과업지시서·특수조건·운행노선표까지 자동 생성합니다.</p>
-    <span class="version">v0.11 · 충남교육청형 HWPX 공고문</span>
+    <p class="desc">학교 공사·물품·용역의 계약방법을 검토하고 유형별 공고문과 계약문서를 자동 생성합니다.</p>
+    <span class="version">v0.12 · 공사·물품·용역 트리 구조</span>
   </section>
 
   <section class="panel">
@@ -168,15 +168,33 @@
       <div id="g2bSummary" class="hint" style="margin-top:8px;margin-bottom:0"></div>
     </div>
 
-    <div class="mode" style="grid-template-columns:repeat(4,1fr)">
-      <button id="generalMode" class="active" type="button">일반 용역</button>
-      <button id="transportMode" type="button">통학차량</button>
-      <button id="goodsMode" type="button">물품</button>
-      <button id="worksMode" type="button">공사</button>
+    <div class="mode" style="grid-template-columns:repeat(3,1fr)">
+      <button id="worksDomain" type="button">공사</button>
+      <button id="goodsDomain" type="button">물품</button>
+      <button id="serviceDomain" class="active" type="button">용역</button>
     </div>
 
+    <div id="serviceTypeSelector" class="subpanel" style="margin-top:0;margin-bottom:18px">
+      <div class="subpanel-head">
+        <div>
+          <h3>용역 세부유형</h3>
+          <p>통학차량 등 세부유형은 용역 안에서 선택합니다.</p>
+        </div>
+      </div>
+      <div class="mode" style="grid-template-columns:repeat(2,1fr);margin-bottom:10px">
+        <button id="generalMode" class="active" type="button">일반용역</button>
+        <button id="transportMode" type="button">통학차량·통학버스</button>
+      </div>
+      <div class="hint" style="margin-bottom:0">
+        수학여행·현장체험학습 · 방과후·늘봄 · 시설 유지관리·법정점검 · 청소·방역은 문서엔진은 구현되어 있으며 웹 입력화면을 순차 연결합니다.
+      </div>
+    </div>
+
+    <button id="goodsMode" class="hidden" type="button" aria-hidden="true"></button>
+    <button id="worksMode" class="hidden" type="button" aria-hidden="true"></button>
+
     <div class="grid3">
-      <div class="field"><label for="serviceName">용역명</label><input id="serviceName" value="학교 시설 유지관리 용역"></div>
+      <div class="field"><label for="serviceName">계약명</label><input id="serviceName" value="학교 시설 유지관리 용역"></div>
       <div class="field"><label for="estimatedPrice">추정가격(원)</label><input id="estimatedPrice" type="number" min="1" value="30000000"></div>
       <div class="field"><label for="plannedDate">공고·계약 예정일</label><input id="plannedDate" type="date" value="2026-09-26"></div>
     </div>
@@ -572,10 +590,13 @@ $("g2bLoadBtn").onclick = async () => {
 
 function setMode(next) {
   mode = next;
+  const serviceSelected = next === "general" || next === "transport";
+  $("serviceDomain").classList.toggle("active", serviceSelected);
+  $("goodsDomain").classList.toggle("active", next === "goods");
+  $("worksDomain").classList.toggle("active", next === "works");
+  $("serviceTypeSelector").classList.toggle("hidden", !serviceSelected);
   $("generalMode").classList.toggle("active", next === "general");
   $("transportMode").classList.toggle("active", next === "transport");
-  $("goodsMode").classList.toggle("active", next === "goods");
-  $("worksMode").classList.toggle("active", next === "works");
   $("generalFields").classList.toggle("hidden", next !== "general");
   $("transportFields").classList.toggle("hidden", next !== "transport");
   $("goodsFields").classList.toggle("hidden", next !== "goods");
@@ -607,14 +628,24 @@ function setMode(next) {
   }
 }
 
+$("serviceDomain").onclick = () => setMode("general");
+$("goodsDomain").onclick = () => setMode("goods");
+$("worksDomain").onclick = () => setMode("works");
 $("generalMode").onclick = () => setMode("general");
 $("transportMode").onclick = () => setMode("transport");
-$("goodsMode").onclick = () => setMode("goods");
-$("worksMode").onclick = () => setMode("works");
 
-const requestedMode = new URLSearchParams(window.location.search).get("mode");
-if (["general", "transport", "goods", "works"].includes(requestedMode)) {
-  setMode(requestedMode);
+const params = new URLSearchParams(window.location.search);
+const requestedDomain = params.get("domain");
+const requestedType = params.get("type");
+const legacyMode = params.get("mode");
+if (requestedDomain === "service") {
+  setMode(requestedType === "transport" ? "transport" : "general");
+} else if (requestedDomain === "goods") {
+  setMode("goods");
+} else if (requestedDomain === "works") {
+  setMode("works");
+} else if (["general", "transport", "goods", "works"].includes(legacyMode)) {
+  setMode(legacyMode);
 }
 
 function addRoute(direction = "등교") {
