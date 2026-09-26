@@ -189,6 +189,7 @@ class TravelDocumentRequest(BaseModel):
     teacher_count: int = Field(ge=0, le=500)
     estimated_price: int = Field(gt=0)
     base_amount: int | None = Field(default=None, gt=0)
+    notice_date: date | None = None
     nights: int = Field(default=0, ge=0, le=30)
     meals: int = Field(default=0, ge=0, le=100)
     transport_type: str = Field(default="전세버스", max_length=100)
@@ -209,6 +210,7 @@ class ProgramDocumentRequest(BaseModel):
     end_date: date
     estimated_price: int = Field(gt=0)
     base_amount: int | None = Field(default=None, gt=0)
+    notice_date: date | None = None
     expected_students: int = Field(default=0, ge=0, le=10000)
     program_count: int = Field(default=0, ge=0, le=500)
     programs_text: str = Field(default="[프로그램 목록 입력 필요]", max_length=10000)
@@ -230,6 +232,7 @@ class FacilityDocumentRequest(BaseModel):
     end_date: date
     estimated_price: int = Field(gt=0)
     base_amount: int | None = Field(default=None, gt=0)
+    notice_date: date | None = None
     statutory_inspection: bool = False
     statutory_basis: str = Field(default="", max_length=1000)
     required_license: str = Field(default="", max_length=1000)
@@ -246,6 +249,7 @@ class LaborDocumentRequest(BaseModel):
     end_date: date
     estimated_price: int = Field(gt=0)
     base_amount: int | None = Field(default=None, gt=0)
+    notice_date: date | None = None
     worker_count: int = Field(default=0, ge=0, le=1000)
     daily_hours: float = Field(default=0, ge=0, le=24)
     work_area: str = Field(default="[작업구역 입력 필요]", max_length=5000)
@@ -740,6 +744,7 @@ def preview_travel_documents(request: TravelDocumentRequest) -> dict:
             teacher_count=request.teacher_count,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            notice_date=request.notice_date,
             nights=request.nights,
             meals=request.meals,
             transport_type=request.transport_type,
@@ -778,6 +783,7 @@ def package_travel_documents(request: TravelDocumentRequest) -> StreamingRespons
             teacher_count=request.teacher_count,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            notice_date=request.notice_date,
             nights=request.nights,
             meals=request.meals,
             transport_type=request.transport_type,
@@ -811,6 +817,7 @@ def preview_program_documents(request: ProgramDocumentRequest) -> dict:
             end_date=request.end_date,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            notice_date=request.notice_date,
             expected_students=request.expected_students,
             program_count=request.program_count,
             programs_text=request.programs_text,
@@ -846,6 +853,7 @@ def package_program_documents(request: ProgramDocumentRequest) -> StreamingRespo
             end_date=request.end_date,
             estimated_price=request.estimated_price,
             base_amount=request.base_amount,
+            notice_date=request.notice_date,
             expected_students=request.expected_students,
             program_count=request.program_count,
             programs_text=request.programs_text,

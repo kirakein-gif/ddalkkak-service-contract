@@ -868,6 +868,7 @@ function configureServiceDocumentFields(kind) {
   $("serviceCountTwoLabel").textContent = profile.countTwo;
   $("serviceDetailTextLabel").textContent = profile.detailText;
   $("serviceScheduleLabel").textContent = profile.schedule;
+  $("serviceCountTwo").step = kind === "labor" ? "0.5" : "1";
   $("serviceStatutory").checked = kind === "facility";
 }
 
@@ -886,7 +887,8 @@ function collectServiceDocument() {
     start_date: $("serviceStartDate").value,
     end_date: $("serviceEndDate").value,
     estimated_price: Number($("estimatedPrice").value),
-    base_amount: optionalNumber("serviceBaseAmount")
+    base_amount: optionalNumber("serviceBaseAmount"),
+    notice_date: $("plannedDate").value || null
   };
   const detail = $("serviceDetail").value.trim();
   const countOne = Number($("serviceCountOne").value) || 0;
@@ -894,12 +896,12 @@ function collectServiceDocument() {
   const detailText = $("serviceDetailText").value.trim() || "[입력 필요]";
   const schedule = $("serviceScheduleText").value.trim() || "[입력 필요]";
   if (mode === "travel") return {
-    ...common, destination: detail || "[여행장소 입력 필요]", student_count: countOne,
-    teacher_count: countTwo, itinerary_text: detailText,
+    ...common, destination: detail || "[여행장소 입력 필요]", student_count: Math.trunc(countOne),
+    teacher_count: Math.trunc(countTwo), itinerary_text: detailText,
     proposal_evaluation_datetime: schedule, bid_open_datetime: "[입력 필요]"
   };
   if (mode === "program") return {
-    ...common, expected_students: countOne, program_count: countTwo,
+    ...common, expected_students: Math.trunc(countOne), program_count: Math.trunc(countTwo),
     programs_text: detailText, operation_text: schedule,
     proposal_evaluation_datetime: "[입력 필요]", bid_open_datetime: "[입력 필요]"
   };

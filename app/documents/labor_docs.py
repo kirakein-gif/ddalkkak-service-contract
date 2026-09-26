@@ -15,6 +15,7 @@ class LaborDocumentData:
     end_date: date
     estimated_price: int
     base_amount: int | None = None
+    notice_date: date | None = None
     worker_count: int = 0
     daily_hours: float = 0
     work_area: str = "[작업구역 입력 필요]"
@@ -161,7 +162,7 @@ def build_labor_documents(
         notice,
         layout="public_notice",
         issuer=data.school_name,
-        issue_date=data.start_date.isoformat(),
+        issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
         summary_rows=(
             ("용 역 명", data.service_name, "작업구역", data.work_area),

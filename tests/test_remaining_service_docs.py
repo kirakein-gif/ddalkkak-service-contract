@@ -78,3 +78,19 @@ def test_service_notice_uses_chungnam_public_notice_layout():
         section_xml = archive.read(section_name).decode("utf-8")
         assert 'left="5669"' in section_xml
         assert 'right="5669"' in section_xml
+
+
+
+def test_service_notice_uses_notice_date_not_service_start_date():
+    docs = build_facility_documents(
+        FacilityDocumentData(
+            school_name="○○초등학교",
+            service_name="2027년 소방시설 자체점검 용역",
+            facility_type="소방시설",
+            start_date=date(2027, 1, 1),
+            end_date=date(2027, 12, 31),
+            estimated_price=35_000_000,
+            notice_date=date(2026, 12, 10),
+        )
+    )
+    assert docs[0].issue_date == "2026-12-10"

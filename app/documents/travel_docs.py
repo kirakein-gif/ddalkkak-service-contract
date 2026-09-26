@@ -18,6 +18,7 @@ class TravelDocumentData:
     teacher_count: int
     estimated_price: int
     base_amount: int | None = None
+    notice_date: date | None = None
     nights: int = 0
     meals: int = 0
     transport_type: str = "전세버스"
@@ -213,7 +214,7 @@ def build_travel_documents(
         notice,
         layout="public_notice",
         issuer=data.school_name,
-        issue_date=data.start_date.isoformat(),
+        issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
         summary_rows=(
             ("용 역 명", data.service_name, "여행장소", data.destination),

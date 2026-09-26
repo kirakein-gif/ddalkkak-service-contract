@@ -15,6 +15,7 @@ class FacilityDocumentData:
     end_date: date
     estimated_price: int
     base_amount: int | None = None
+    notice_date: date | None = None
     statutory_inspection: bool = False
     statutory_basis: str = ""
     required_license: str = ""
@@ -150,7 +151,7 @@ def build_facility_documents(data: FacilityDocumentData) -> list[GeneratedDocume
         notice,
         layout="public_notice",
         issuer=data.school_name,
-        issue_date=data.start_date.isoformat(),
+        issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
         summary_rows=(
             ("용 역 명", data.service_name, "시설분야", data.facility_type),

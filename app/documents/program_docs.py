@@ -15,6 +15,7 @@ class ProgramDocumentData:
     end_date: date
     estimated_price: int
     base_amount: int | None = None
+    notice_date: date | None = None
     expected_students: int = 0
     program_count: int = 0
     programs_text: str = "[프로그램 목록 입력 필요]"
@@ -195,7 +196,7 @@ def build_program_documents(
         notice,
         layout="public_notice",
         issuer=data.school_name,
-        issue_date=data.start_date.isoformat(),
+        issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
         summary_rows=(
             ("용 역 명", data.service_name, "운영기간", f"{data.start_date.isoformat()} ~ {data.end_date.isoformat()}"),
