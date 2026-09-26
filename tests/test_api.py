@@ -124,3 +124,11 @@ def test_transport_hwpx_package_api_returns_zip_with_four_hwpx() -> None:
         names = archive.namelist()
         assert len(names) == 4
         assert all(name.endswith(".hwpx") for name in names)
+
+
+
+def test_g2b_endpoint_requires_service_key(monkeypatch) -> None:
+    monkeypatch.delenv("DATA_GO_KR_SERVICE_KEY", raising=False)
+    response = client.get("/api/g2b/service-notice/R26BK01234567")
+    assert response.status_code == 503
+    assert "DATA_GO_KR_SERVICE_KEY" in response.json()["detail"]
