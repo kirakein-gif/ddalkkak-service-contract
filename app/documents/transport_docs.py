@@ -22,6 +22,7 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Pt
+from hwpx import HwpxDocument
 
 from app.rules.transport import TransportRuleResult
 
@@ -419,4 +420,36 @@ def build_transport_docx_zip(documents: list[GeneratedDocument]) -> bytes:
         for index, doc in enumerate(documents, start=1):
             filename = f"{index:02d}_{doc.title.replace('/', '_')}.docx"
             archive.writestr(filename, document_to_docx_bytes(doc))
+    return stream.getvalue()
+
+
+
+def document_to_hwpx_bytes(document_data: GeneratedDocument) -> bytes:
+    """GeneratedDocument를 한/글 표준 문서(HWPX) 바이트로 변환한다."""
+    document = HwpxDocument.new()
+    for raw in document_data.content.splitlines():
+        line = raw.rstrip()
+        if not line:
+            document.add_paragraph("")
+            continue
+        if line.startswith("# "):
+            document.add_heading(line[2:], level=1)
+            continue
+        if line.startswith("## "):
+            document.add_heading(line[3:], level=2)
+            continue
+        if line.startswith("- "):
+            document.add_paragraph("• " + line[2:])
+            continue
+        document.add_paragraph(line)
+    return document.to_bytes()
+
+
+def build_transport_hwpx_zip(documents: list[GeneratedDocument]) -> bytes:
+    """통학차량 문서 4종을 HWPX 파일로 묶어 ZIP으로 반환한다."""
+    stream = BytesIO()
+    with ZipFile(stream, "w", compression=ZIP_DEFLATED) as archive:
+        for index, doc in enumerate(documents, start=1):
+            filename = f"{index:02d}_{doc.title.replace('/', '_')}.hwpx"
+            archive.writestr(filename, document_to_hwpx_bytes(doc))
     return stream.getvalue()
