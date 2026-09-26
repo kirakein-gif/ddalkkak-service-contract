@@ -858,6 +858,11 @@ def package_transport_documents(request: TransportDocumentRequest) -> StreamingR
     )
 
 
+@app.get("/workspace")
+def workspace() -> FileResponse:
+    return FileResponse(STATIC_DIR / "workspace.html")
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
