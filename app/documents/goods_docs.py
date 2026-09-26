@@ -233,14 +233,11 @@ def build_goods_documents(data: GoodsDocumentData, rule: GoodsResult) -> list[Ge
 """
 
     summary = (
-        ("건명", data.item_name),
-        ("품목·규격", data.quantity_text),
-        ("기초금액", _money(data.base_amount)),
-        ("추정가격", _money(data.estimated_price)),
-        ("납품기한", data.delivery_date.isoformat()),
-        ("납품장소", data.delivery_place),
-        ("제출기간", f"{data.bid_start} ~ {data.bid_end}" if rule.route_code != GoodsRoute.ONE_PERSON else "[입력 필요]"),
-        ("개찰", data.bid_open if rule.route_code != GoodsRoute.ONE_PERSON else "해당 없음"),
+        ("건 명", data.item_name, "", ""),
+        ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ("규격·수량", data.quantity_text, "납품기한", data.delivery_date.isoformat()),
+        ("전자견적서 제출기간", f"{data.bid_start} ~ {data.bid_end}" if rule.route_code != GoodsRoute.ONE_PERSON else "[입력 필요]", "", ""),
+        ("개찰일시 및 장소", f"{data.bid_open} / 발주기관 입찰집행관 PC" if rule.route_code != GoodsRoute.ONE_PERSON else "해당 없음", "", ""),
     )
 
     notice_doc = GeneratedDocument(
@@ -253,7 +250,17 @@ def build_goods_documents(data: GoodsDocumentData, rule: GoodsResult) -> list[Ge
         summary_rows=summary,
         issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
-        alert_text="본 계약은 국가종합전자조달시스템(G2B)을 이용한 전자견적·전자입찰 및 전자계약 절차를 적용합니다.",
+        alert_text=(
+            "규정 착오 또는 관계 규정의 미숙지 등으로 계약을 체결하지 않거나 계약을 체결하고 불이행하는 경우, "
+            "관계 법령에 따라 부정당업자로 제재되어 일정 기간 입찰 참가가 제한되는 등 불이익을 받을 수 있습니다. "
+            "본 공고문과 규격서·특수조건 및 관계 규정을 충분히 숙지한 후 견적·입찰에 참가하시기 바랍니다.\n\n"
+            "전자입찰 이용 및 참가자격등록: 조달청 나라장터 콜센터(1588-0800)"
+        ),
+        integrity_text=(
+            "본 계약은 「지방자치단체를 당사자로 하는 계약에 관한 법률」 제6조의2에 따라 청렴서약제가 적용됩니다. "
+            "견적·입찰 참가자는 청렴계약 조건을 숙지하고 승낙하여야 하며, 계약상대자는 전자계약 체결 시 "
+            "청렴계약 이행서약서 등 발주기관이 요구하는 서류를 제출하여야 합니다."
+        ),
     )
 
     return [
