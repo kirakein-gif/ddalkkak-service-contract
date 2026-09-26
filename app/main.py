@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.9.0",
+    version="0.10.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -356,7 +356,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.9.0",
+        "version": "0.10.0",
     }
 
 
@@ -471,8 +471,7 @@ def preview_goods_documents(request: GoodsRequest) -> dict:
             delivery_place=request.delivery_place,
             warranty_text=request.warranty_text,
             inspection_text=request.inspection_text,
-            notice_number=request.notice_number,
-            bid_start=request.bid_start,
+            notice_number=request.notice_number,\n            notice_date=request.planned_date,\n            bid_start=request.bid_start,
             bid_end=request.bid_end,
             bid_open=request.bid_open,
             region_limit=request.region_limit,
@@ -518,8 +517,7 @@ def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
             delivery_place=request.delivery_place,
             warranty_text=request.warranty_text,
             inspection_text=request.inspection_text,
-            notice_number=request.notice_number,
-            bid_start=request.bid_start,
+            notice_number=request.notice_number,\n            notice_date=request.planned_date,\n            bid_start=request.bid_start,
             bid_end=request.bid_end,
             bid_open=request.bid_open,
             region_limit=request.region_limit,
@@ -576,8 +574,7 @@ def preview_works_documents(request: WorksRequest) -> dict:
             required_industry=request.required_industry,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
-            notice_number=request.notice_number,
-            bid_start=request.bid_start,
+            notice_number=request.notice_number,\n            notice_date=request.planned_date,\n            bid_start=request.bid_start,
             bid_end=request.bid_end,
             bid_open=request.bid_open,
             region_limit=request.region_limit,
@@ -622,8 +619,7 @@ def package_works_documents(request: WorksRequest) -> StreamingResponse:
             required_industry=request.required_industry,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
-            notice_number=request.notice_number,
-            bid_start=request.bid_start,
+            notice_number=request.notice_number,\n            notice_date=request.planned_date,\n            bid_start=request.bid_start,
             bid_end=request.bid_end,
             bid_open=request.bid_open,
             region_limit=request.region_limit,
