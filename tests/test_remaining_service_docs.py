@@ -3,7 +3,7 @@ from io import BytesIO
 from zipfile import ZipFile
 
 from app.documents.facility_docs import FacilityDocumentData, build_facility_documents
-from app.documents.formats import build_hwpx_zip
+from app.documents.formats import build_hwpx_zip, document_to_hwpx_bytes
 from app.documents.labor_docs import LaborDocumentData, build_labor_documents
 from app.rules.simple_labor import evaluate_simple_labor
 
@@ -57,3 +57,24 @@ def test_labor_docs_include_labor_cost_and_worker_protection():
     assert "최저임금" in combined
     assert "4대보험" in combined
     assert "2단계 입찰 대상에서 제외" in combined
+
+
+
+def test_service_notice_uses_chungnam_public_notice_layout():
+    docs = build_facility_documents(
+        FacilityDocumentData(
+            school_name="○○초등학교",
+            service_name="2027년 소방시설 자체점검 용역",
+            facility_type="소방시설",
+            start_date=date(2027, 1, 1),
+            end_date=date(2027, 12, 31),
+            estimated_price=35_000_000,
+        )
+    )
+
+    assert docs[0].layout == "public_notice"
+    with ZipFile(BytesIO(document_to_hwpx_bytes(docs[0]))) as archive:
+        section_name = next(name for name in archive.namelist() if name.endswith("section0.xml"))
+        section_xml = archive.read(section_name).decode("utf-8")
+        assert 'left="5669"' in section_xml
+        assert 'right="5669"' in section_xml

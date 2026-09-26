@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL CONTRACT</div>
     <h1>딸깍 계약업무</h1>
     <p class="desc">학교 공사·물품·용역의 계약방법을 검토하고 유형별 공고문과 계약문서를 자동 생성합니다.</p>
-    <span class="version">v0.13 · 공사·물품 유형 세분화</span>
+    <span class="version">v0.14 · 용역 세부유형 문서 생성 연결</span>
   </section>
 
   <section class="panel">
@@ -181,12 +181,16 @@
           <p>통학차량 등 세부유형은 용역 안에서 선택합니다.</p>
         </div>
       </div>
-      <div class="mode" style="grid-template-columns:repeat(2,1fr);margin-bottom:10px">
-        <button id="generalMode" class="active" type="button">일반용역</button>
+      <div class="mode" style="grid-template-columns:repeat(3,1fr);margin-bottom:10px">
         <button id="transportMode" type="button">통학차량·통학버스</button>
+        <button id="travelMode" type="button">수학여행·현장체험</button>
+        <button id="programMode" type="button">방과후·늘봄</button>
+        <button id="facilityMode" type="button">시설 유지·법정점검</button>
+        <button id="laborMode" type="button">청소·방역</button>
+        <button id="generalMode" class="active" type="button">기타 학교 일반용역</button>
       </div>
       <div class="hint" style="margin-bottom:0">
-        수학여행·현장체험학습 · 방과후·늘봄 · 시설 유지관리·법정점검 · 청소·방역은 문서엔진은 구현되어 있으며 웹 입력화면을 순차 연결합니다.
+        용역은 모두 이 안에서 고릅니다. 통학차량은 별도 최상위 업무가 아니라 용역의 세부유형입니다.
       </div>
     </div>
 
@@ -261,6 +265,33 @@
         <label class="check"><input id="driverIncluded" type="checkbox" checked>운전원 포함</label>
         <label class="check"><input id="attendantIncluded" type="checkbox" checked>동승보호자 포함</label>
         <label class="check"><input id="regionalRestriction" type="checkbox" checked>지역제한 검토</label>
+      </div>
+    </div>
+
+
+    <div id="serviceDocumentFields" class="subpanel hidden">
+      <div class="subpanel-head">
+        <div>
+          <h3 id="serviceDocumentTitle">용역 문서 생성정보</h3>
+          <p id="serviceDocumentHint">유형별 핵심 조건을 입력하면 공고문·과업지시서·특수조건을 함께 생성합니다.</p>
+        </div>
+      </div>
+      <div class="grid4">
+        <div class="field"><label for="serviceSchoolName">학교명</label><input id="serviceSchoolName" value="○○학교"></div>
+        <div class="field"><label for="serviceStartDate">시작일</label><input id="serviceStartDate" type="date" value="2027-03-01"></div>
+        <div class="field"><label for="serviceEndDate">종료일</label><input id="serviceEndDate" type="date" value="2028-02-29"></div>
+        <div class="field"><label for="serviceBaseAmount">기초금액(원)</label><input id="serviceBaseAmount" type="number" min="1"></div>
+      </div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label id="serviceDetailLabel" for="serviceDetail">핵심 대상·장소·시설</label><input id="serviceDetail" placeholder="유형별 핵심 내용을 입력"></div>
+        <div class="field"><label id="serviceCountOneLabel" for="serviceCountOne">예정 인원</label><input id="serviceCountOne" type="number" min="0" value="0"></div>
+        <div class="field"><label id="serviceCountTwoLabel" for="serviceCountTwo">보조 수량</label><input id="serviceCountTwo" type="number" min="0" step="0.5" value="0"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label id="serviceDetailTextLabel" for="serviceDetailText">세부 과업·프로그램·작업 범위</label><textarea id="serviceDetailText" placeholder="빈칸으로 두면 문서에 [입력 필요]로 표시됩니다."></textarea></div>
+      <div class="field" style="margin-top:12px"><label id="serviceScheduleLabel" for="serviceScheduleText">일정·운영시간·점검주기</label><textarea id="serviceScheduleText" placeholder="운영일정, 점검주기, 작업시간 등을 입력"></textarea></div>
+      <div class="checks" style="margin-top:12px">
+        <label class="check"><input id="serviceStatutory" type="checkbox">법정점검 또는 법정 자격이 필요한 업무</label>
+        <label class="check"><input id="serviceSafety" type="checkbox" checked>안전·비상대응 조건을 문서에 반영</label>
       </div>
     </div>
 
@@ -627,20 +658,26 @@ $("g2bLoadBtn").onclick = async () => {
 
 function setMode(next) {
   mode = next;
-  const serviceSelected = next === "general" || next === "transport";
+  const serviceModes = ["general", "transport", "travel", "program", "facility", "labor"];
+  const serviceSelected = serviceModes.includes(next);
   $("serviceDomain").classList.toggle("active", serviceSelected);
   $("goodsDomain").classList.toggle("active", next === "goods");
   $("worksDomain").classList.toggle("active", next === "works");
   $("serviceTypeSelector").classList.toggle("hidden", !serviceSelected);
   $("generalMode").classList.toggle("active", next === "general");
   $("transportMode").classList.toggle("active", next === "transport");
+  $("travelMode").classList.toggle("active", next === "travel");
+  $("programMode").classList.toggle("active", next === "program");
+  $("facilityMode").classList.toggle("active", next === "facility");
+  $("laborMode").classList.toggle("active", next === "labor");
   $("generalFields").classList.toggle("hidden", next !== "general");
   $("transportFields").classList.toggle("hidden", next !== "transport");
+  $("serviceDocumentFields").classList.toggle("hidden", !["travel", "program", "facility", "labor"].includes(next));
   $("goodsFields").classList.toggle("hidden", next !== "goods");
   $("worksFields").classList.toggle("hidden", next !== "works");
   $("documentPanel").classList.toggle("hidden", next !== "transport");
   $("qualificationPanel").classList.toggle("hidden", next !== "transport");
-  const hasDocuments = ["transport","goods","works"].includes(next);
+  const hasDocuments = ["transport", "travel", "program", "facility", "labor", "goods", "works"].includes(next);
   $("previewBtn").classList.toggle("hidden", !hasDocuments);
   $("downloadBtn").classList.toggle("hidden", !hasDocuments);
   $("docxDownloadBtn").classList.toggle("hidden", next !== "transport");
@@ -659,6 +696,22 @@ function setMode(next) {
   } else if (next === "works") {
     $("serviceName").value = "교실 바닥 교체공사";
     $("estimatedPrice").value = "80000000";
+  } else if (next === "travel") {
+    $("serviceName").value = "2027학년도 수학여행 위탁용역";
+    $("estimatedPrice").value = "120000000";
+    configureServiceDocumentFields("travel");
+  } else if (next === "program") {
+    $("serviceName").value = "2027학년도 방과후학교 프로그램 운영 용역";
+    $("estimatedPrice").value = "80000000";
+    configureServiceDocumentFields("program");
+  } else if (next === "facility") {
+    $("serviceName").value = "2027년 소방시설 자체점검 용역";
+    $("estimatedPrice").value = "35000000";
+    configureServiceDocumentFields("facility");
+  } else if (next === "labor") {
+    $("serviceName").value = "2027년 교사동 청소용역";
+    $("estimatedPrice").value = "80000000";
+    configureServiceDocumentFields("labor");
   } else {
     $("serviceName").value = "학교 시설 유지관리 용역";
     $("estimatedPrice").value = "30000000";
@@ -670,18 +723,22 @@ $("goodsDomain").onclick = () => setMode("goods");
 $("worksDomain").onclick = () => setMode("works");
 $("generalMode").onclick = () => setMode("general");
 $("transportMode").onclick = () => setMode("transport");
+$("travelMode").onclick = () => setMode("travel");
+$("programMode").onclick = () => setMode("program");
+$("facilityMode").onclick = () => setMode("facility");
+$("laborMode").onclick = () => setMode("labor");
 
 const params = new URLSearchParams(window.location.search);
 const requestedDomain = params.get("domain");
 const requestedType = params.get("type");
 const legacyMode = params.get("mode");
 if (requestedDomain === "service") {
-  setMode(requestedType === "transport" ? "transport" : "general");
+  setMode(["transport", "travel", "program", "facility", "labor"].includes(requestedType) ? requestedType : "general");
 } else if (requestedDomain === "goods") {
   setMode("goods");
 } else if (requestedDomain === "works") {
   setMode("works");
-} else if (["general", "transport", "goods", "works"].includes(legacyMode)) {
+} else if (["general", "transport", "travel", "program", "facility", "labor", "goods", "works"].includes(legacyMode)) {
   setMode(legacyMode);
 }
 
@@ -770,6 +827,93 @@ function collectDocumentRequest() {
     direct_vehicle_required: $("directVehicle").checked,
     extra_notes: $("extraNotes").value.trim(),
     routes: collectRoutes()
+  };
+}
+
+
+const serviceDocumentProfiles = {
+  travel: {
+    title: "수학여행·현장체험학습 문서 생성정보",
+    hint: "입찰공고·과업설명서·특수조건·제안요청서·일정표를 함께 생성합니다.",
+    detail: "여행장소", countOne: "학생 수", countTwo: "인솔교직원 수",
+    detailText: "세부일정", schedule: "제안서 평가·개찰 일정"
+  },
+  program: {
+    title: "방과후·늘봄 문서 생성정보",
+    hint: "입찰공고·과업내용서·제안요청서·특수조건·원가·정산항목표를 생성합니다.",
+    detail: "운영 대상·학교 특성", countOne: "예정 학생수", countTwo: "프로그램 수",
+    detailText: "프로그램 목록", schedule: "운영 요일·시간"
+  },
+  facility: {
+    title: "시설 유지관리·법정점검 문서 생성정보",
+    hint: "공고문·과업지시서·특수조건·자격서류 체크리스트·점검일정표를 생성합니다.",
+    detail: "시설분야", countOne: "예정 점검 횟수", countTwo: "보조 수량",
+    detailText: "점검·유지관리 범위", schedule: "점검일정·주기"
+  },
+  labor: {
+    title: "청소·방역 문서 생성정보",
+    hint: "공고문·과업지시서·특수조건·원가계산표·이행확인 체크리스트를 생성합니다.",
+    detail: "작업구역", countOne: "투입 인원", countTwo: "1일 근로시간",
+    detailText: "세부 작업범위", schedule: "작업시간·주기"
+  }
+};
+
+function configureServiceDocumentFields(kind) {
+  const profile = serviceDocumentProfiles[kind];
+  if (!profile) return;
+  $("serviceDocumentTitle").textContent = profile.title;
+  $("serviceDocumentHint").textContent = profile.hint;
+  $("serviceDetailLabel").textContent = profile.detail;
+  $("serviceCountOneLabel").textContent = profile.countOne;
+  $("serviceCountTwoLabel").textContent = profile.countTwo;
+  $("serviceDetailTextLabel").textContent = profile.detailText;
+  $("serviceScheduleLabel").textContent = profile.schedule;
+  $("serviceStatutory").checked = kind === "facility";
+}
+
+function serviceCategoryForMode() {
+  if (mode === "travel") return "TRAVEL";
+  if (mode === "program") return "AFTER_SCHOOL";
+  if (mode === "facility") return $("serviceStatutory").checked ? "STATUTORY_INSPECTION" : "FACILITY_MAINTENANCE";
+  if (mode === "labor") return $("serviceStatutory").checked ? "DISINFECTION" : "CLEANING";
+  return "GENERAL";
+}
+
+function collectServiceDocument() {
+  const common = {
+    school_name: $("serviceSchoolName").value.trim() || "○○학교",
+    service_name: $("serviceName").value.trim(),
+    start_date: $("serviceStartDate").value,
+    end_date: $("serviceEndDate").value,
+    estimated_price: Number($("estimatedPrice").value),
+    base_amount: optionalNumber("serviceBaseAmount")
+  };
+  const detail = $("serviceDetail").value.trim();
+  const countOne = Number($("serviceCountOne").value) || 0;
+  const countTwo = Number($("serviceCountTwo").value) || 0;
+  const detailText = $("serviceDetailText").value.trim() || "[입력 필요]";
+  const schedule = $("serviceScheduleText").value.trim() || "[입력 필요]";
+  if (mode === "travel") return {
+    ...common, destination: detail || "[여행장소 입력 필요]", student_count: countOne,
+    teacher_count: countTwo, itinerary_text: detailText,
+    proposal_evaluation_datetime: schedule, bid_open_datetime: "[입력 필요]"
+  };
+  if (mode === "program") return {
+    ...common, expected_students: countOne, program_count: countTwo,
+    programs_text: detailText, operation_text: schedule,
+    proposal_evaluation_datetime: "[입력 필요]", bid_open_datetime: "[입력 필요]"
+  };
+  if (mode === "facility") return {
+    ...common, facility_type: detail || "[시설분야 입력 필요]",
+    statutory_inspection: $("serviceStatutory").checked,
+    inspection_schedule: schedule, scope_text: detailText,
+    emergency_response: $("serviceSafety").checked
+  };
+  return {
+    ...common, worker_count: countOne, daily_hours: countTwo,
+    work_area: detail || "[작업구역 입력 필요]", scope_text: detailText,
+    disinfection_license_required: $("serviceStatutory").checked,
+    supplies_included: true
   };
 }
 
@@ -970,6 +1114,14 @@ $("evaluateBtn").onclick = async () => {
     } else if (mode === "transport") {
       body = collectTransport();
       endpoint = "/api/evaluate/transport";
+    } else if (["travel", "program", "facility", "labor"].includes(mode)) {
+      body = {
+        ...collectBase(),
+        service_category: serviceCategoryForMode(),
+        requires_proposal_evaluation: ["travel", "program"].includes(mode),
+        technical_service: mode === "facility" && $("serviceStatutory").checked
+      };
+      endpoint = "/api/evaluate/service";
     } else if (mode === "goods") {
       body = collectGoods();
       endpoint = "/api/evaluate/goods";
@@ -996,6 +1148,18 @@ $("previewBtn").onclick = async () => {
     if (mode === "transport") {
       previewEndpoint = "/api/documents/transport/preview";
       previewBody = collectDocumentRequest();
+    } else if (mode === "travel") {
+      previewEndpoint = "/api/documents/travel/preview";
+      previewBody = collectServiceDocument();
+    } else if (mode === "program") {
+      previewEndpoint = "/api/documents/program/preview";
+      previewBody = collectServiceDocument();
+    } else if (mode === "facility") {
+      previewEndpoint = "/api/documents/facility/preview";
+      previewBody = collectServiceDocument();
+    } else if (mode === "labor") {
+      previewEndpoint = "/api/documents/labor/preview";
+      previewBody = collectServiceDocument();
     } else if (mode === "goods") {
       previewEndpoint = "/api/documents/goods/preview";
       previewBody = collectGoods();
@@ -1018,7 +1182,7 @@ $("previewBtn").onclick = async () => {
       $("previewDocs").appendChild(card);
     }
     $("previewPanel").classList.remove("hidden");
-    $("statusNote").textContent = "문서 4종 미리보기를 생성했습니다.";
+    $("statusNote").textContent = "유형별 문서 미리보기를 생성했습니다.";
     $("previewPanel").scrollIntoView({behavior: "smooth", block: "start"});
   } catch (error) {
     $("statusNote").textContent = "";
@@ -1064,6 +1228,22 @@ $("downloadBtn").onclick = async () => {
       packageEndpoint = "/api/documents/transport/package-hwpx";
       packageBody = collectDocumentRequest();
       packageName = "ddalkkak_transport_hwpx.zip";
+    } else if (mode === "travel") {
+      packageEndpoint = "/api/documents/travel/package-hwpx";
+      packageBody = collectServiceDocument();
+      packageName = "ddalkkak_travel_hwpx.zip";
+    } else if (mode === "program") {
+      packageEndpoint = "/api/documents/program/package-hwpx";
+      packageBody = collectServiceDocument();
+      packageName = "ddalkkak_program_hwpx.zip";
+    } else if (mode === "facility") {
+      packageEndpoint = "/api/documents/facility/package-hwpx";
+      packageBody = collectServiceDocument();
+      packageName = "ddalkkak_facility_hwpx.zip";
+    } else if (mode === "labor") {
+      packageEndpoint = "/api/documents/labor/package-hwpx";
+      packageBody = collectServiceDocument();
+      packageName = "ddalkkak_labor_hwpx.zip";
     } else if (mode === "goods") {
       packageEndpoint = "/api/documents/goods/package-hwpx";
       packageBody = collectGoods();
@@ -1091,7 +1271,7 @@ $("downloadBtn").onclick = async () => {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    $("statusNote").textContent = "HWPX 4종 문서 묶음을 생성했습니다.";
+    $("statusNote").textContent = "HWPX 문서 묶음을 생성했습니다.";
   } catch (error) {
     $("statusNote").textContent = "";
     $("error").textContent = "오류: " + error.message;

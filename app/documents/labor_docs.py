@@ -155,8 +155,25 @@ def build_labor_documents(
 - 소모품·약품 안전관리
 """
 
+    notice_doc = GeneratedDocument(
+        "notice",
+        f"{data.service_name} 공고",
+        notice,
+        layout="public_notice",
+        issuer=data.school_name,
+        issue_date=data.start_date.isoformat(),
+        signatory=f"{data.school_name}장",
+        summary_rows=(
+            ("용 역 명", data.service_name, "작업구역", data.work_area),
+            ("용역기간", f"{data.start_date.isoformat()} ~ {data.end_date.isoformat()}", "투입인원", f"{data.worker_count or '[입력 필요]'}명"),
+            ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ),
+        alert_text="과업지시서, 근로조건, 원가계산 기준 및 관계 규정을 충분히 숙지한 후 견적·입찰에 참가하시기 바랍니다.",
+        integrity_text="본 계약은 지방계약 관계법령에 따른 청렴계약(서약)제가 적용됩니다. 최저임금·4대보험·퇴직급여 등 노무비 기준은 계약 예정연도의 현행 기준을 적용해야 합니다.",
+    )
+
     return [
-        GeneratedDocument("notice", f"{data.service_name} 공고", notice),
+        notice_doc,
         GeneratedDocument("scope", f"{data.service_name} 과업지시서", scope),
         GeneratedDocument("conditions", f"{data.service_name} 특수조건", conditions),
         GeneratedDocument("cost", f"{data.service_name} 원가계산표", cost),

@@ -189,8 +189,25 @@ def build_program_documents(
 ※ 입찰 전 학교가 비용부담 주체와 정산식을 확정한다.
 """
 
+    notice_doc = GeneratedDocument(
+        "notice",
+        f"{data.service_name} 입찰공고",
+        notice,
+        layout="public_notice",
+        issuer=data.school_name,
+        issue_date=data.start_date.isoformat(),
+        signatory=f"{data.school_name}장",
+        summary_rows=(
+            ("용 역 명", data.service_name, "운영기간", f"{data.start_date.isoformat()} ~ {data.end_date.isoformat()}"),
+            ("예정학생수", f"{data.expected_students or '[입력 필요]'}명", "프로그램 수", f"{data.program_count or '[입력 필요]'}개"),
+            ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ),
+        alert_text="제안요청서, 과업내용서, 계약 특수조건 및 관계 규정을 충분히 숙지한 후 입찰에 참가하시기 바랍니다. 전자입찰 이용 및 참가자격등록: 조달청 나라장터 콜센터(1588-0800)",
+        integrity_text="본 계약은 지방계약 관계법령에 따른 청렴계약(서약)제가 적용됩니다. 제안서 평가기준과 계약조건은 학교가 공고 전에 확정해야 합니다.",
+    )
+
     return [
-        GeneratedDocument("notice", f"{data.service_name} 입찰공고", notice),
+        notice_doc,
         GeneratedDocument("scope", f"{data.service_name} 과업내용서", scope),
         GeneratedDocument("rfp", f"{data.service_name} 제안요청서", rfp),
         GeneratedDocument("conditions", f"{data.service_name} 계약 특수조건", conditions),

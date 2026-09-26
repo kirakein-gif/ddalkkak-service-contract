@@ -31,6 +31,11 @@ from app.rules.goods import GoodsInput, evaluate_goods
 from app.rules.goods_catalog import GoodsCategory, get_goods_profile, list_goods_profiles
 from app.rules.works import WorksInput, WorksType, evaluate_works
 from app.rules.works_catalog import SchoolWorkType, get_works_profile, list_works_profiles
+from app.rules.service_catalog import (
+    SchoolServiceType,
+    get_service_profile,
+    list_service_profiles,
+)
 from app.rules.simple_labor import evaluate_simple_labor
 from app.rules.two_stage import TwoStageInput, TwoStageMethod, evaluate_two_stage
 from app.rules.engine import (
@@ -59,7 +64,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 계약업무",
     description="학교 공사·용역·물품 계약업무 지원 웹도구",
-    version="0.13.0",
+    version="0.14.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -74,6 +79,12 @@ class EvaluateRequest(BaseModel):
     special_knowledge_or_qualification: bool = False
     technical_service: bool = False
     requires_proposal_evaluation: bool = False
+
+
+class ServiceEvaluateRequest(EvaluateRequest):
+    """용역 세부유형을 먼저 받아 공통 Rule Engine에 연결하는 요청."""
+
+    service_category: SchoolServiceType = SchoolServiceType.GENERAL
 
 
 class TransportEvaluateRequest(BaseModel):
@@ -360,7 +371,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.13.0",
+        "version": "0.14.0",
     }
 
 
@@ -495,6 +506,44 @@ def get_goods_catalog(planned_date: date | None = None) -> list[dict]:
 @app.get("/api/catalog/works")
 def get_works_catalog() -> list[dict]:
     return jsonable_encoder([asdict(item) for item in list_works_profiles()])
+
+
+@app.get("/api/catalog/services")
+def get_service_catalog() -> list[dict]:
+    """용역은 반드시 최상위 '용역' 아래의 세부유형으로만 제공한다."""
+    return jsonable_encoder([asdict(item) for item in list_service_profiles()])
+
+
+@app.post("/api/evaluate/service")
+def evaluate_service_contract(request: ServiceEvaluateRequest) -> dict:
+    """세부유형의 전문 검토항목을 일반 용역 계약판정 결과에 함께 붙인다."""
+    profile = get_service_profile(request.service_category)
+    requires_proposal = request.requires_proposal_evaluation or request.service_category in {
+        SchoolServiceType.TRAVEL,
+        SchoolServiceType.AFTER_SCHOOL,
+    }
+    technical = (
+        request.technical_service
+        or request.service_category == SchoolServiceType.STATUTORY_INSPECTION
+    )
+    result = evaluate_contract(
+        ContractInput(
+            service_name=request.service_name,
+            estimated_price=request.estimated_price,
+            planned_date=request.planned_date,
+            vendor_category=request.vendor_category,
+            special_entity_requirements_confirmed=request.special_entity_requirements_confirmed,
+            special_knowledge_or_qualification=request.special_knowledge_or_qualification,
+            technical_service=technical,
+            requires_proposal_evaluation=requires_proposal,
+        )
+    )
+    _append_unique(result.legal_bases, profile.legal_bases)
+    _append_unique(result.required_checks, profile.checks)
+    _append_unique(result.warnings, profile.warnings)
+    output = jsonable_encoder(asdict(result))
+    output["profile"] = jsonable_encoder(asdict(profile))
+    return output
 
 
 @app.post("/api/evaluate/goods")

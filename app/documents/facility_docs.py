@@ -144,8 +144,25 @@ def build_facility_documents(data: FacilityDocumentData) -> list[GeneratedDocume
 - 보수 필요사항 별도 계약 여부 검토
 """
 
+    notice_doc = GeneratedDocument(
+        "notice",
+        f"{data.service_name} 공고",
+        notice,
+        layout="public_notice",
+        issuer=data.school_name,
+        issue_date=data.start_date.isoformat(),
+        signatory=f"{data.school_name}장",
+        summary_rows=(
+            ("용 역 명", data.service_name, "시설분야", data.facility_type),
+            ("용역기간", f"{data.start_date.isoformat()} ~ {data.end_date.isoformat()}", "법정점검", "적용" if data.statutory_inspection else "해당 시 확인"),
+            ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ),
+        alert_text="과업지시서, 점검일정, 관계법령상 자격요건 및 계약 특수조건을 충분히 숙지한 후 견적·입찰에 참가하시기 바랍니다.",
+        integrity_text="본 계약은 지방계약 관계법령에 따른 청렴계약(서약)제가 적용됩니다. 법정점검의 시설별 등록·인력·보고기한은 공고 전에 담당자가 최종 확인해야 합니다.",
+    )
+
     return [
-        GeneratedDocument("notice", f"{data.service_name} 공고", notice),
+        notice_doc,
         GeneratedDocument("scope", f"{data.service_name} 과업지시서", scope),
         GeneratedDocument("conditions", f"{data.service_name} 특수조건", conditions),
         GeneratedDocument("checklist", f"{data.service_name} 자격서류 체크리스트", checklist),

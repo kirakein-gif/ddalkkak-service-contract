@@ -207,8 +207,25 @@ def build_travel_documents(
 - 응급상황 시 인근 의료기관
 """
 
+    notice_doc = GeneratedDocument(
+        "notice",
+        f"{data.service_name} 입찰공고",
+        notice,
+        layout="public_notice",
+        issuer=data.school_name,
+        issue_date=data.start_date.isoformat(),
+        signatory=f"{data.school_name}장",
+        summary_rows=(
+            ("용 역 명", data.service_name, "여행장소", data.destination),
+            ("여행기간", f"{data.start_date.isoformat()} ~ {data.end_date.isoformat()}", "예정인원", f"{people}명"),
+            ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ),
+        alert_text="본 공고문, 과업설명서, 제안요청서 및 관계 규정을 충분히 숙지한 후 입찰에 참가하시기 바랍니다. 전자입찰 이용 및 참가자격등록: 조달청 나라장터 콜센터(1588-0800)",
+        integrity_text="본 계약은 지방계약 관계법령에 따른 청렴계약(서약)제가 적용됩니다. 입찰참가자와 계약상대자는 청렴계약 조건 및 학교가 요구하는 전자계약 서류를 확인해야 합니다.",
+    )
+
     return [
-        GeneratedDocument("notice", f"{data.service_name} 입찰공고", notice),
+        notice_doc,
         GeneratedDocument("scope", f"{data.service_name} 과업설명서", scope),
         GeneratedDocument("special", f"{data.service_name} 계약 특수조건", special),
         GeneratedDocument("evaluation", f"{data.service_name} 제안요청서", evaluation),
