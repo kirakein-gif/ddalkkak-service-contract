@@ -16,7 +16,7 @@
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
     .chip{padding:7px 10px;border-radius:999px;background:#eef4ff;color:#315f9c;font-size:12px;font-weight:800}
     .section-title{margin:30px 0 12px;font-size:20px}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .card{background:#fff;border:1px solid #dce5f0;border-radius:18px;padding:22px;min-height:178px;transition:.15s ease;display:flex;flex-direction:column}
     .card:hover{border-color:#9dbbea;transform:translateY(-1px)}
     .icon{font-size:28px;margin-bottom:13px}
@@ -24,6 +24,11 @@
     .card p{margin:0;color:#687a90;line-height:1.65;font-size:14px;flex:1}
     .go{margin-top:18px;font-size:13px;font-weight:900;color:#2563eb}
     .wide{grid-column:1/-1;min-height:auto}
+    .service-tree{display:grid;gap:8px;margin-top:16px}
+    .service-node{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1px solid #e2e9f2;border-radius:11px;background:#f8fafc;font-size:13px}
+    .service-node.available{background:#f3f7ff;border-color:#cddcf5}
+    .service-node b{font-size:13px}
+    .service-node span{font-size:11px;color:#8592a5}
     .status{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
     .status div{padding:14px;border-radius:12px;background:#f8fafc;border:1px solid #e5ebf3}
     .status small{display:block;color:#8190a4;margin-bottom:5px}
@@ -40,42 +45,42 @@
     <h1>딸깍 계약업무</h1>
     <p class="lead">학교 계약업무의 조건을 입력하면 계약방법을 검토하고, 공고문과 계약 관련 문서를 HWPX로 생성합니다. 현재는 테스트 버전으로 로그인 없이 바로 사용할 수 있습니다.</p>
     <div class="chips">
-      <span class="chip">v0.11 TEST</span>
+      <span class="chip">v0.12 TEST</span>
       <span class="chip">충남교육청형 HWPX</span>
-      <span class="chip">공사 · 용역 · 물품</span>
+      <span class="chip">공사 · 물품 · 용역</span>
       <span class="chip">나라장터 연동 준비</span>
     </div>
   </section>
 
   <h2 class="section-title">업무를 선택하세요</h2>
   <section class="grid">
-    <a class="card" href="/workspace?mode=general">
-      <div class="icon">📋</div>
-      <h2>일반 용역</h2>
-      <p>소액수의·경쟁입찰 기본 판정과 시설 유지관리, 법정점검 등 학교 용역의 문서 작성을 테스트합니다.</p>
-      <div class="go">용역 시작 →</div>
+    <a class="card" href="/workspace?domain=works">
+      <div class="icon">🏗️</div>
+      <h2>공사</h2>
+      <p>종합·전문·기타공사를 구분하고 A값·법정경비를 반영한 견적제출 안내공고와 공사문서를 생성합니다.</p>
+      <div class="go">공사 시작 →</div>
     </a>
 
-    <a class="card" href="/workspace?mode=transport">
-      <div class="icon">🚌</div>
-      <h2>통학차량·통학버스</h2>
-      <p>통학운송 계약판정, 직접생산, 어린이통학버스 요건, 적격심사와 HWPX 문서세트를 테스트합니다.</p>
-      <div class="go">통학차량 시작 →</div>
-    </a>
-
-    <a class="card" href="/workspace?mode=goods">
+    <a class="card" href="/workspace?domain=goods">
       <div class="icon">📦</div>
       <h2>물품</h2>
       <p>물품 구매 계약방법을 판정하고 견적제출 안내공고·입찰공고, 규격서, 특수조건, 검수표를 생성합니다.</p>
       <div class="go">물품 시작 →</div>
     </a>
 
-    <a class="card" href="/workspace?mode=works">
-      <div class="icon">🏗️</div>
-      <h2>공사</h2>
-      <p>종합·전문·기타공사를 구분하고 A값·법정경비를 반영한 견적제출 안내공고와 공사문서를 생성합니다.</p>
-      <div class="go">공사 시작 →</div>
-    </a>
+    <div class="card">
+      <div class="icon">📋</div>
+      <h2>용역</h2>
+      <p>학교에서 반복되는 용역 유형을 선택해 유형별 규칙과 문서세트를 적용합니다.</p>
+      <div class="service-tree">
+        <a class="service-node available" href="/workspace?domain=service&type=transport"><b>🚌 통학차량·통학버스</b><span>사용 가능 →</span></a>
+        <a class="service-node available" href="/workspace?domain=service&type=general"><b>일반용역</b><span>사용 가능 →</span></a>
+        <div class="service-node"><b>수학여행·현장체험학습</b><span>웹 화면 연결 예정</span></div>
+        <div class="service-node"><b>방과후·늘봄</b><span>웹 화면 연결 예정</span></div>
+        <div class="service-node"><b>시설 유지관리·법정점검</b><span>웹 화면 연결 예정</span></div>
+        <div class="service-node"><b>청소·방역</b><span>웹 화면 연결 예정</span></div>
+      </div>
+    </div>
 
     <div class="card wide">
       <h2>현재 테스트 범위</h2>
