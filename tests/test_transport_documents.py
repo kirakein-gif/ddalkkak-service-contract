@@ -116,3 +116,64 @@ def test_builds_zip_with_four_openable_hwpx_files() -> None:
         raw = archive.read(names[0])
         with HwpxDocument.open(BytesIO(raw)) as hwpx:
             assert len(hwpx.sections) >= 1
+
+
+
+def test_transport_notice_reflects_current_and_editable_procurement_terms() -> None:
+    transport = TransportInput(
+        service_name="2027학년도 통학차량 임차용역",
+        estimated_price=150_000_000,
+        planned_date=date(2026, 9, 26),
+        passenger_group=PassengerGroup.ELEMENTARY,
+        vehicle_count=2,
+        seat_capacity_min=45,
+        service_item=TransportServiceItem.SCHOOL_TRANSPORT,
+        pricing_method=PricingMethod.TOTAL,
+        operation_days=190,
+        driver_included=True,
+        attendant_included=True,
+        regional_restriction_requested=True,
+    )
+    rule = evaluate_transport(transport)
+    data = TransportDocumentData(
+        school_name="○○초등학교",
+        service_name=transport.service_name,
+        estimated_price=transport.estimated_price,
+        vehicle_count=2,
+        seat_capacity_min=45,
+        planned_date=transport.planned_date,
+        base_amount=165_000_000,
+        operation_days=190,
+        region_restriction_text="충청남도",
+        vehicle_year_condition="2019년 이후 출고 차량",
+        direct_vehicle_required=True,
+        joint_supply_allowed=False,
+        qualification_document_deadline_text="적격심사 대상 통보 후 5일 이내",
+        contract_deadline_text="낙찰통보 후 10일 이내",
+        social_insurance_settlement_text="원가계산서 계상 사회보험료를 관련 규정에 따라 사후정산",
+        pricing_method_label="총액",
+        service_item_name=rule.service_item_name,
+        service_item_code=rule.service_item_code,
+    )
+    notice = build_transport_documents(data, rule)[0].content
+
+    assert "89.995%" in notice
+    assert "88점 이상" in notice
+    assert "복수예비가격 15개" in notice
+    assert "4개 가격을 산술평균" in notice
+    assert "종합평점" in notice
+    assert "5일 이내" in notice
+    assert "10일 이내" in notice
+    assert "2019년 이후" in notice
+    assert "공동수급: 불허" in notice
+    assert "사후정산" in notice
+
+
+def test_transport_small_value_and_unit_price_keep_distinct_terms() -> None:
+    rule, data = build_sample()
+    data.pricing_method_label = "단가"
+    data.equal_price_method = ""
+    notice = build_transport_documents(data, rule)[0].content
+    assert "단가계약" in notice
+    assert "실제 운행일수" in notice
+    assert "자동추첨" in notice
