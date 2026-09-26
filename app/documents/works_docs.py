@@ -242,14 +242,12 @@ def build_works_documents(data: WorksDocumentData, rule: WorksResult) -> list[Ge
 """
 
     summary = (
-        ("공사명", data.work_name),
-        ("공사현장", data.location),
-        ("공사기간", f"착공일부터 {data.completion_days}일"),
-        ("기초금액", _money(data.base_amount)),
-        ("추정가격", _money(data.estimated_price)),
-        ("A값", _money(data.a_value_total)),
-        ("제출기간", f"{data.bid_start} ~ {data.bid_end}" if rule.route_code != WorksRoute.ONE_PERSON else "[입력 필요]"),
-        ("개찰", data.bid_open if rule.route_code != WorksRoute.ONE_PERSON else "해당 없음"),
+        ("공 사 명", data.work_name, "", ""),
+        ("공사현장", data.location, "공사기간", f"착공일부터 {data.completion_days}일"),
+        ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
+        ("A 값", _money(data.a_value_total), "요구업종", _value(data.required_industry)),
+        ("전자견적서 제출기간", f"{data.bid_start} ~ {data.bid_end}" if rule.route_code != WorksRoute.ONE_PERSON else "[입력 필요]", "", ""),
+        ("개찰일시 및 장소", f"{data.bid_open} / 발주기관 입찰집행관 PC" if rule.route_code != WorksRoute.ONE_PERSON else "해당 없음", "", ""),
     )
 
     notice_doc = GeneratedDocument(
@@ -262,7 +260,17 @@ def build_works_documents(data: WorksDocumentData, rule: WorksResult) -> list[Ge
         summary_rows=summary,
         issue_date=data.notice_date.isoformat() if data.notice_date else "",
         signatory=f"{data.school_name}장",
-        alert_text="본 공사는 국가종합전자조달시스템(G2B)을 이용한 전자견적·전자입찰 및 전자계약 절차를 적용합니다.",
+        alert_text=(
+            "규정 착오 또는 관계 규정의 미숙지 등으로 계약을 체결하지 않거나 계약을 체결하고 불이행하는 경우, "
+            "관계 법령에 따라 부정당업자로 제재되어 일정 기간 입찰 참가가 제한되는 등 불이익을 받을 수 있습니다. "
+            "본 공고문과 설계서·내역서·시방서 및 관계 규정을 충분히 숙지한 후 견적·입찰에 참가하시기 바랍니다.\n\n"
+            "전자입찰 이용 및 참가자격등록: 조달청 나라장터 콜센터(1588-0800)"
+        ),
+        integrity_text=(
+            "본 계약은 「지방자치단체를 당사자로 하는 계약에 관한 법률」 제6조의2에 따라 청렴서약제가 적용됩니다. "
+            "견적·입찰 참가자는 청렴계약 조건을 숙지하고 승낙하여야 하며, 계약상대자는 전자계약 체결 시 "
+            "청렴계약 이행서약서 등 발주기관이 요구하는 서류를 제출하여야 합니다."
+        ),
     )
 
     return [
