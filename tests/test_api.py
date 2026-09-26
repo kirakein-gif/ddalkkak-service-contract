@@ -272,12 +272,12 @@ def test_works_document_api_and_hwpx_package() -> None:
 
 def test_launcher_and_workspace_pages() -> None:
     launcher = client.get("/")
-    workspace = client.get("/workspace?mode=goods")
+    workspace = client.get("/workspace?domain=service&type=transport")
 
     assert launcher.status_code == 200
     assert "딸깍 계약업무" in launcher.text
-    assert "/workspace?mode=goods" in launcher.text
+    assert "/workspace?domain=goods" in launcher.text
 
     assert workspace.status_code == 200
-    assert "goodsMode" in workspace.text
+    assert "serviceDomain" in workspace.text\n    assert "transportMode" in workspace.text
     assert "URLSearchParams" in workspace.text
