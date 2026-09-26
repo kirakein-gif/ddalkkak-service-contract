@@ -132,3 +132,87 @@ def test_g2b_endpoint_requires_service_key(monkeypatch) -> None:
     response = client.get("/api/g2b/service-notice/R26BK01234567")
     assert response.status_code == 503
     assert "DATA_GO_KR_SERVICE_KEY" in response.json()["detail"]
+
+
+
+def test_travel_document_api_returns_five_documents_and_hwpx_zip() -> None:
+    payload = {
+        "school_name": "○○중학교",
+        "service_name": "2027학년도 2학년 수학여행 위탁용역",
+        "destination": "제주도",
+        "start_date": "2027-05-10",
+        "end_date": "2027-05-13",
+        "student_count": 200,
+        "teacher_count": 12,
+        "estimated_price": 120000000,
+        "base_amount": 132000000,
+        "nights": 3,
+        "meals": 7,
+        "proposal_pass_score": 80,
+        "itinerary_text": "1일차 학교→제주",
+    }
+    preview = client.post("/api/documents/travel/preview", json=payload)
+    assert preview.status_code == 200
+    assert len(preview.json()["documents"]) == 5
+    package = client.post("/api/documents/travel/package-hwpx", json=payload)
+    assert package.status_code == 200
+    with ZipFile(BytesIO(package.content)) as archive:
+        assert len(archive.namelist()) == 5
+        assert all(name.endswith(".hwpx") for name in archive.namelist())
+
+
+def test_program_document_api_returns_five_documents() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "service_name": "2027학년도 늘봄학교 프로그램 운영 용역",
+        "start_date": "2027-03-01",
+        "end_date": "2028-02-29",
+        "estimated_price": 250000000,
+        "expected_students": 180,
+        "program_count": 12,
+        "programs_text": "독서논술, 축구, 방송댄스",
+        "operation_text": "학기중 방과후",
+        "proposal_pass_score": 80,
+    }
+    response = client.post("/api/documents/program/preview", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["documents"]) == 5
+    assert "강사" in body["documents"][1]["content"]
+
+
+def test_facility_document_api_returns_five_documents() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "service_name": "2027년 소방시설 자체점검 용역",
+        "facility_type": "소방시설",
+        "start_date": "2027-01-01",
+        "end_date": "2027-12-31",
+        "estimated_price": 35000000,
+        "statutory_inspection": True,
+        "statutory_basis": "소방시설 설치 및 관리에 관한 법률 등",
+        "required_license": "소방시설관리업 등 공고에서 정한 자격",
+        "inspection_schedule": "상반기 1회, 하반기 1회",
+    }
+    response = client.post("/api/documents/facility/preview", json=payload)
+    assert response.status_code == 200
+    assert len(response.json()["documents"]) == 5
+
+
+def test_labor_document_api_marks_two_stage_as_not_allowed() -> None:
+    payload = {
+        "school_name": "○○중학교",
+        "service_name": "2027년 교사동 청소용역",
+        "start_date": "2027-01-01",
+        "end_date": "2027-12-31",
+        "estimated_price": 80000000,
+        "worker_count": 2,
+        "daily_hours": 8,
+        "work_area": "교사동 및 공용부",
+        "scope_text": "일상청소, 화장실, 복도, 계단",
+    }
+    response = client.post("/api/documents/labor/preview", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["rule"]["two_stage_allowed"] is False
+    assert len(body["documents"]) == 5
