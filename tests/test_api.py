@@ -267,3 +267,17 @@ def test_works_document_api_and_hwpx_package() -> None:
     assert package.status_code == 200
     with ZipFile(BytesIO(package.content)) as archive:
         assert len(archive.namelist()) == 4
+
+
+
+def test_launcher_and_workspace_pages() -> None:
+    launcher = client.get("/")
+    workspace = client.get("/workspace?mode=goods")
+
+    assert launcher.status_code == 200
+    assert "딸깍 계약업무" in launcher.text
+    assert "/workspace?mode=goods" in launcher.text
+
+    assert workspace.status_code == 200
+    assert "goodsMode" in workspace.text
+    assert "URLSearchParams" in workspace.text
