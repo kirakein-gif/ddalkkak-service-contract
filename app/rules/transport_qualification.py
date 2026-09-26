@@ -11,10 +11,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 from enum import StrEnum
 
 
+QUALIFICATION_RULE_EFFECTIVE_FROM = date(2026, 7, 27)
 PASS_SCORE = Decimal("88")
 PERFORMANCE_CAP = Decimal("10")
 BUSINESS_CAP = Decimal("10")
@@ -68,6 +70,7 @@ SAFETY_SCORES = {
 @dataclass(slots=True)
 class QualificationInput:
     estimated_price: int
+    planned_date: date = QUALIFICATION_RULE_EFFECTIVE_FROM
     expected_price: int
     bid_price: int
     performance_base_amount: int
@@ -169,6 +172,8 @@ def calculate_price_score(expected_price: int, bid_price: int) -> tuple[Decimal,
 
 
 def calculate_transport_qualification(data: QualificationInput) -> QualificationResult:
+    if data.planned_date < QUALIFICATION_RULE_EFFECTIVE_FROM:
+        raise ValueError("현재 계산기는 2026-07-27 이후 최초 입찰공고 건만 지원합니다.")
     if data.estimated_price <= 0:
         raise ValueError("추정가격은 0원보다 커야 합니다.")
     if data.estimated_price >= MAX_ESTIMATED_PRICE:
