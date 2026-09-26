@@ -24,7 +24,7 @@ from docx.oxml.ns import qn
 from docx.shared import Pt
 from hwpx import HwpxDocument
 
-from app.rules.transport import TransportRuleResult
+from app.rules.transport import TransportRouteCode, TransportRuleResult
 
 
 @dataclass(slots=True)
@@ -61,6 +61,12 @@ class TransportDocumentData:
     bid_open: str = ""
     vehicle_year_condition: str = ""
     direct_vehicle_required: bool = False
+    joint_supply_allowed: bool = False
+    equal_price_method: str = ""
+    qualification_document_deadline_text: str = "[적격심사 대상 통보 후 공고에서 정한 기한]"
+    contract_deadline_text: str = "[계약상대자 결정 후 공고에서 정한 기한]"
+    minimum_wage_pledge_required: bool = True
+    social_insurance_settlement_text: str = "[해당 시 원가계산서 계상금액 및 사후정산 적용 여부 확인]"
     pricing_method_label: str = "총액"
     service_item_name: str = ""
     service_item_code: str | None = None
@@ -100,6 +106,20 @@ def _notice_title(rule: TransportRuleResult) -> str:
     if "2인 이상" in method or "수의계약" in method:
         return "통학차량 임차용역 소액수의 견적제출 안내공고"
     return "통학차량 임차용역 입찰공고"
+
+
+def _equal_price_text(data: TransportDocumentData, rule: TransportRuleResult) -> str:
+    if data.equal_price_method.strip():
+        return data.equal_price_method.strip()
+    if rule.route_code in {
+        TransportRouteCode.COMPETITIVE_UNDER_500M,
+        TransportRouteCode.COMPETITIVE_500M_OR_MORE,
+    }:
+        return (
+            "적격심사 적용 입찰은 공고에서 정한 종합평점 우선기준을 확인하고, "
+            "종합평점까지 같은 경우 국가종합전자조달시스템 자동추첨 등 공고기준에 따라 결정"
+        )
+    return "동일가격 견적 제출자가 2인 이상인 경우 국가종합전자조달시스템 자동추첨 방식 적용"
 
 
 def _qualification_lines(data: TransportDocumentData, rule: TransportRuleResult) -> list[str]:
@@ -148,6 +168,9 @@ def _build_notice(data: TransportDocumentData, rule: TransportRuleResult) -> Gen
 - 기초금액: {_money(data.base_amount)}
 - 예산액: {_money(data.budget_amount)}
 - 세부품명: {_value(data.service_item_name)}{f' ({data.service_item_code})' if data.service_item_code else ''}
+- 공동수급: {'허용' if data.joint_supply_allowed else '불허'}
+- 차량연식 조건: {_value(data.vehicle_year_condition, '법정 차령 준수 + 학교 선택조건 별도 확인')}
+- 회사 소유·직영차량 조건: {'적용' if data.direct_vehicle_required else '미적용 또는 별도 검토'}
 
 ## 2. 계약 및 낙찰방법
 - 계약경로: {rule.contract_method}
@@ -166,22 +189,33 @@ def _build_notice(data: TransportDocumentData, rule: TransportRuleResult) -> Gen
 - 개찰일시: {_value(data.bid_open)}
 - 개찰장소: 국가종합전자조달시스템 또는 공고에서 정한 장소
 
-## 5. 계약상대자 결정
-- 예정가격 및 계약상대자 결정은 공고일 현재 적용되는 지방계약 관계 규정과 행정안전부 예규를 따른다.
-- 적격심사 대상인 경우 공고일 현재 유효한 조달청 일반용역 적격심사 세부기준을 적용한다.
-- 동일가격 제출자가 발생하는 경우 전자조달시스템의 자동추첨 등 관계 규정에 따른다.
+## 5. 예정가격 및 계약상대자·낙찰자 결정
+- 예정가격은 기초금액의 ±3% 범위에서 복수예비가격 15개를 작성하고, 전자조달시스템에서 추첨된 4개 가격을 산술평균하는 방식의 적용 여부를 공고조건에서 확인한다.
+- 소액수의 견적은 예정가격 이하로서 공고에서 정한 견적하한율 이상인 자 중 최저가격 제출자부터 수의계약 배제사유를 확인한다.
+- 적격심사 대상 경쟁입찰은 공고일 현재 유효한 조달청 일반용역 적격심사 세부기준 [별표 5] 등 적용기준을 확인한다.
+- 동일가격 처리: {_equal_price_text(data, rule)}
+- 적격심사 서류제출 기한: {data.qualification_document_deadline_text if rule.qualification_score is not None else '해당 없음'}
+- 계약체결 기한: {data.contract_deadline_text}
 - 수의계약 대상인 경우 수의계약 배제사유와 이해충돌방지법상 체결 제한을 확인한다.
 
 ## 6. 계약 전 확인서류
 {chr(10).join(f'- {item}' for item in rule.required_documents)}
 
-## 7. 유의사항
+## 7. 대가·근로조건·보험료 정산
+- 예정 운행일수와 운행요일은 학사일정·학생수·학교사정에 따라 변경될 수 있으므로 변경·정산기준을 특수조건에 명확히 둔다.
+- 단가계약은 실제 운행일수·횟수와 계약단가에 따른 지급기준을 명확히 하고, 총액계약도 미운행·추가운행 정산방식을 특수조건에 둔다.
+- 최저임금·근로조건 이행확약: {'확인·제출조건 검토' if data.minimum_wage_pledge_required else '별도 요구 없음 또는 기관기준 확인'}
+- 국민연금·건강보험·장기요양보험 등 사후정산: {data.social_insurance_settlement_text}
+
+## 8. 유의사항
 - 과업지시서, 계약 특수조건 및 운행노선표를 반드시 함께 확인한다.
-- 학교가 제시하는 차량연식·직영차량 등 선택조건은 공고 전 경쟁제한의 적정성을 확인한다.
+- 학교가 제시하는 차량연식·직영차량 등 선택조건은 법정 공통요건이 아니므로 공고 전 필요성과 경쟁제한의 적정성을 확인한다.
+- 공동수급 허용 여부는 학교 공고조건으로 확정한다.
 - 계약상대자는 관계 법령상 안전기준과 학교의 안전관리 요구사항을 준수해야 한다.
+- 2026. 7. 27. 이전 통학차량 공고의 과거 낙찰하한율을 현재 계약에 그대로 복사하지 않는다.
 - 공고일 현재 법령·예규·조달청 기준·SMPP 중소기업자간 경쟁제품 정보를 최종 확인한다.
 
-## 8. 문의
+## 9. 문의
 - 기관: {data.school_name}
 - 주소: {_value(data.school_address)}
 - 담당자: {_value(data.contact_name)}
