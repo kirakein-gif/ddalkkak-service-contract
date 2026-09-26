@@ -13,6 +13,11 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from app.documents.formats import build_hwpx_zip
+from app.documents.facility_docs import FacilityDocumentData, build_facility_documents
+from app.documents.labor_docs import LaborDocumentData, build_labor_documents
+from app.documents.program_docs import ProgramDocumentData, build_program_documents
+from app.documents.travel_docs import TravelDocumentData, build_travel_documents
 from app.documents.transport_docs import (
     RouteEntry,
     TransportDocumentData,
@@ -20,6 +25,8 @@ from app.documents.transport_docs import (
     build_transport_docx_zip,
     build_transport_hwpx_zip,
 )
+from app.rules.simple_labor import evaluate_simple_labor
+from app.rules.two_stage import TwoStageInput, TwoStageMethod, evaluate_two_stage
 from app.rules.engine import (
     ContractInput,
     VendorCategory,
@@ -46,7 +53,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.6.1",
+    version="0.7.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -90,6 +97,83 @@ class TransportQualificationRequest(BaseModel):
     safety_grade: SafetyGrade = SafetyGrade.GRADE_1
     reputation_score: Decimal = Field(default=Decimal("0"), ge=Decimal("-5"), le=Decimal("4.25"))
     disqualification_reason: bool = False
+
+
+
+class TravelDocumentRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    service_name: str = Field(min_length=1, max_length=200)
+    destination: str = Field(min_length=1, max_length=200)
+    start_date: date
+    end_date: date
+    student_count: int = Field(ge=0, le=5000)
+    teacher_count: int = Field(ge=0, le=500)
+    estimated_price: int = Field(gt=0)
+    base_amount: int | None = Field(default=None, gt=0)
+    nights: int = Field(default=0, ge=0, le=30)
+    meals: int = Field(default=0, ge=0, le=100)
+    transport_type: str = Field(default="전세버스", max_length=100)
+    lodging_required: bool = True
+    insurance_required: bool = True
+    proposal_pass_score: float = Field(default=80, gt=0, le=100)
+    proposal_submit_place: str = Field(default="학교 행정실", max_length=200)
+    proposal_evaluation_datetime: str = Field(default="[입력 필요]", max_length=100)
+    bid_open_datetime: str = Field(default="[입력 필요]", max_length=100)
+    region_limit: str = Field(default="", max_length=200)
+    itinerary_text: str = Field(default="[세부일정 입력 필요]", max_length=10000)
+
+
+class ProgramDocumentRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    service_name: str = Field(min_length=1, max_length=200)
+    start_date: date
+    end_date: date
+    estimated_price: int = Field(gt=0)
+    base_amount: int | None = Field(default=None, gt=0)
+    expected_students: int = Field(default=0, ge=0, le=10000)
+    program_count: int = Field(default=0, ge=0, le=500)
+    programs_text: str = Field(default="[프로그램 목록 입력 필요]", max_length=10000)
+    operation_text: str = Field(default="[운영요일·시간 입력 필요]", max_length=10000)
+    instructor_cost_included: bool = True
+    material_cost_separate: bool = True
+    actual_settlement: bool = True
+    proposal_pass_score: float = Field(default=80, gt=0, le=100)
+    proposal_evaluation_datetime: str = Field(default="[입력 필요]", max_length=100)
+    bid_open_datetime: str = Field(default="[입력 필요]", max_length=100)
+    region_limit: str = Field(default="", max_length=200)
+
+
+class FacilityDocumentRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    service_name: str = Field(min_length=1, max_length=200)
+    facility_type: str = Field(min_length=1, max_length=100)
+    start_date: date
+    end_date: date
+    estimated_price: int = Field(gt=0)
+    base_amount: int | None = Field(default=None, gt=0)
+    statutory_inspection: bool = False
+    statutory_basis: str = Field(default="", max_length=1000)
+    required_license: str = Field(default="", max_length=1000)
+    inspection_schedule: str = Field(default="[점검일정 입력 필요]", max_length=5000)
+    scope_text: str = Field(default="[점검·유지관리 범위 입력 필요]", max_length=10000)
+    report_text: str = Field(default="점검결과보고서 및 관계법령상 제출자료", max_length=3000)
+    emergency_response: bool = True
+
+
+class LaborDocumentRequest(BaseModel):
+    school_name: str = Field(min_length=1, max_length=100)
+    service_name: str = Field(min_length=1, max_length=200)
+    start_date: date
+    end_date: date
+    estimated_price: int = Field(gt=0)
+    base_amount: int | None = Field(default=None, gt=0)
+    worker_count: int = Field(default=0, ge=0, le=1000)
+    daily_hours: float = Field(default=0, ge=0, le=24)
+    work_area: str = Field(default="[작업구역 입력 필요]", max_length=5000)
+    scope_text: str = Field(default="[세부 청소·방역 범위 입력 필요]", max_length=10000)
+    supplies_included: bool = True
+    disinfection_license_required: bool = False
+    required_license: str = Field(default="", max_length=1000)
 
 
 class RouteRequest(BaseModel):
@@ -184,12 +268,31 @@ def _build_document_data(request: TransportDocumentRequest, rule) -> TransportDo
     )
 
 
+
+def _hwpx_response(documents, filename: str) -> StreamingResponse:
+    payload = build_hwpx_zip(documents)
+    return StreamingResponse(
+        BytesIO(payload),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _documents_preview(documents) -> dict:
+    return {
+        "documents": [
+            {"key": item.key, "title": item.title, "content": item.content}
+            for item in documents
+        ]
+    }
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.6.1",
+        "version": "0.7.0",
     }
 
 
@@ -257,6 +360,177 @@ def calculate_school_transport_qualification(
         )
     )
     return jsonable_encoder(asdict(result))
+
+
+
+@app.post("/api/documents/travel/preview")
+def preview_travel_documents(request: TravelDocumentRequest) -> dict:
+    rule = evaluate_two_stage(
+        TwoStageInput(
+            service_name=request.service_name,
+            method=TwoStageMethod.SIMULTANEOUS,
+            proposal_pass_score=request.proposal_pass_score,
+        )
+    )
+    documents = build_travel_documents(
+        TravelDocumentData(
+            school_name=request.school_name,
+            service_name=request.service_name,
+            destination=request.destination,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            student_count=request.student_count,
+            teacher_count=request.teacher_count,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            nights=request.nights,
+            meals=request.meals,
+            transport_type=request.transport_type,
+            lodging_required=request.lodging_required,
+            insurance_required=request.insurance_required,
+            proposal_submit_place=request.proposal_submit_place,
+            proposal_evaluation_datetime=request.proposal_evaluation_datetime,
+            bid_open_datetime=request.bid_open_datetime,
+            region_limit=request.region_limit,
+            itinerary_text=request.itinerary_text,
+        ),
+        rule,
+    )
+    result = _documents_preview(documents)
+    result["rule"] = jsonable_encoder(asdict(rule))
+    return result
+
+
+@app.post("/api/documents/travel/package-hwpx")
+def package_travel_documents(request: TravelDocumentRequest) -> StreamingResponse:
+    rule = evaluate_two_stage(
+        TwoStageInput(
+            service_name=request.service_name,
+            method=TwoStageMethod.SIMULTANEOUS,
+            proposal_pass_score=request.proposal_pass_score,
+        )
+    )
+    documents = build_travel_documents(
+        TravelDocumentData(
+            school_name=request.school_name,
+            service_name=request.service_name,
+            destination=request.destination,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            student_count=request.student_count,
+            teacher_count=request.teacher_count,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            nights=request.nights,
+            meals=request.meals,
+            transport_type=request.transport_type,
+            lodging_required=request.lodging_required,
+            insurance_required=request.insurance_required,
+            proposal_submit_place=request.proposal_submit_place,
+            proposal_evaluation_datetime=request.proposal_evaluation_datetime,
+            bid_open_datetime=request.bid_open_datetime,
+            region_limit=request.region_limit,
+            itinerary_text=request.itinerary_text,
+        ),
+        rule,
+    )
+    return _hwpx_response(documents, "ddalkkak_travel_hwpx.zip")
+
+
+@app.post("/api/documents/program/preview")
+def preview_program_documents(request: ProgramDocumentRequest) -> dict:
+    rule = evaluate_two_stage(
+        TwoStageInput(
+            service_name=request.service_name,
+            method=TwoStageMethod.SIMULTANEOUS,
+            proposal_pass_score=request.proposal_pass_score,
+        )
+    )
+    documents = build_program_documents(
+        ProgramDocumentData(
+            school_name=request.school_name,
+            service_name=request.service_name,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            expected_students=request.expected_students,
+            program_count=request.program_count,
+            programs_text=request.programs_text,
+            operation_text=request.operation_text,
+            instructor_cost_included=request.instructor_cost_included,
+            material_cost_separate=request.material_cost_separate,
+            actual_settlement=request.actual_settlement,
+            proposal_evaluation_datetime=request.proposal_evaluation_datetime,
+            bid_open_datetime=request.bid_open_datetime,
+            region_limit=request.region_limit,
+        ),
+        rule,
+    )
+    result = _documents_preview(documents)
+    result["rule"] = jsonable_encoder(asdict(rule))
+    return result
+
+
+@app.post("/api/documents/program/package-hwpx")
+def package_program_documents(request: ProgramDocumentRequest) -> StreamingResponse:
+    rule = evaluate_two_stage(
+        TwoStageInput(
+            service_name=request.service_name,
+            method=TwoStageMethod.SIMULTANEOUS,
+            proposal_pass_score=request.proposal_pass_score,
+        )
+    )
+    documents = build_program_documents(
+        ProgramDocumentData(
+            school_name=request.school_name,
+            service_name=request.service_name,
+            start_date=request.start_date,
+            end_date=request.end_date,
+            estimated_price=request.estimated_price,
+            base_amount=request.base_amount,
+            expected_students=request.expected_students,
+            program_count=request.program_count,
+            programs_text=request.programs_text,
+            operation_text=request.operation_text,
+            instructor_cost_included=request.instructor_cost_included,
+            material_cost_separate=request.material_cost_separate,
+            actual_settlement=request.actual_settlement,
+            proposal_evaluation_datetime=request.proposal_evaluation_datetime,
+            bid_open_datetime=request.bid_open_datetime,
+            region_limit=request.region_limit,
+        ),
+        rule,
+    )
+    return _hwpx_response(documents, "ddalkkak_program_hwpx.zip")
+
+
+@app.post("/api/documents/facility/preview")
+def preview_facility_documents(request: FacilityDocumentRequest) -> dict:
+    documents = build_facility_documents(FacilityDocumentData(**request.model_dump()))
+    return _documents_preview(documents)
+
+
+@app.post("/api/documents/facility/package-hwpx")
+def package_facility_documents(request: FacilityDocumentRequest) -> StreamingResponse:
+    documents = build_facility_documents(FacilityDocumentData(**request.model_dump()))
+    return _hwpx_response(documents, "ddalkkak_facility_hwpx.zip")
+
+
+@app.post("/api/documents/labor/preview")
+def preview_labor_documents(request: LaborDocumentRequest) -> dict:
+    rule = evaluate_simple_labor()
+    documents = build_labor_documents(LaborDocumentData(**request.model_dump()), rule)
+    result = _documents_preview(documents)
+    result["rule"] = jsonable_encoder(asdict(rule))
+    return result
+
+
+@app.post("/api/documents/labor/package-hwpx")
+def package_labor_documents(request: LaborDocumentRequest) -> StreamingResponse:
+    rule = evaluate_simple_labor()
+    documents = build_labor_documents(LaborDocumentData(**request.model_dump()), rule)
+    return _hwpx_response(documents, "ddalkkak_labor_hwpx.zip")
 
 
 @app.post("/api/documents/transport/preview")
