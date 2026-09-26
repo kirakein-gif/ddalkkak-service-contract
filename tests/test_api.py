@@ -279,5 +279,6 @@ def test_launcher_and_workspace_pages() -> None:
     assert "/workspace?domain=goods" in launcher.text
 
     assert workspace.status_code == 200
-    assert "serviceDomain" in workspace.text\n    assert "transportMode" in workspace.text
+    assert "serviceDomain" in workspace.text
+    assert "transportMode" in workspace.text
     assert "URLSearchParams" in workspace.text
