@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL CONTRACT</div>
     <h1>딸깍 계약업무</h1>
     <p class="desc">학교 공사·물품·용역의 계약방법을 검토하고 유형별 공고문과 계약문서를 자동 생성합니다.</p>
-    <span class="version">v0.15 · 충남 수학여행 공고표본 반영</span>
+    <span class="version">v0.16 · 충남 방과후·늘봄 공고표본 반영</span>
   </section>
 
   <section class="panel">
@@ -289,6 +289,21 @@
       </div>
       <div class="field" style="margin-top:12px"><label id="serviceDetailTextLabel" for="serviceDetailText">세부 과업·프로그램·작업 범위</label><textarea id="serviceDetailText" placeholder="빈칸으로 두면 문서에 [입력 필요]로 표시됩니다."></textarea></div>
       <div class="field" style="margin-top:12px"><label id="serviceScheduleLabel" for="serviceScheduleText">일정·운영시간·점검주기</label><textarea id="serviceScheduleText" placeholder="운영일정, 점검주기, 작업시간 등을 입력"></textarea></div>
+      <div class="grid3" style="margin-top:12px">
+        <div class="field"><label for="serviceRegionLimit">지역제한</label><input id="serviceRegionLimit" placeholder="예: 충청남도"></div>
+        <div id="serviceProposalScoreField" class="field hidden"><label for="serviceProposalScore">제안서 적격점수</label><input id="serviceProposalScore" type="number" min="1" max="100" value="85"></div>
+        <div id="serviceLaborRatioField" class="field hidden"><label for="serviceLaborRatio">인건비 반영비율(%)</label><input id="serviceLaborRatio" type="number" min="0" max="100" step="0.001" placeholder="예: 82.465"></div>
+      </div>
+      <div id="serviceTwoStageOptions" class="grid2 hidden" style="margin-top:12px">
+        <div class="field"><label for="serviceTieBreak">동일가격 처리기준</label><input id="serviceTieBreak" placeholder="학교가 공고 전에 확정"></div>
+        <div class="field"><label for="serviceContractDeadline">계약체결 기한</label><input id="serviceContractDeadline" placeholder="예: 낙찰통보 후 10일 이내"></div>
+      </div>
+      <div id="serviceProgramChecks" class="checks hidden" style="margin-top:12px">
+        <label class="check"><input id="serviceMaterialSeparate" type="checkbox" checked>교재·교구·재료비 별도</label>
+        <label class="check"><input id="serviceActualSettlement" type="checkbox" checked>학생수·차시 변동 정산</label>
+        <label class="check"><input id="serviceElectronicContract" type="checkbox" checked>전자계약 적용</label>
+        <label class="check"><input id="serviceJointSupply" type="checkbox">공동수급 허용</label>
+      </div>
       <div class="checks" style="margin-top:12px">
         <label class="check"><input id="serviceStatutory" type="checkbox">법정점검 또는 법정 자격이 필요한 업무</label>
         <label class="check"><input id="serviceSafety" type="checkbox" checked>안전·비상대응 조건을 문서에 반영</label>
@@ -869,6 +884,15 @@ function configureServiceDocumentFields(kind) {
   $("serviceDetailTextLabel").textContent = profile.detailText;
   $("serviceScheduleLabel").textContent = profile.schedule;
   $("serviceCountTwo").step = kind === "labor" ? "0.5" : "1";
+  const twoStage = kind === "travel" || kind === "program";
+  $("serviceProposalScoreField").classList.toggle("hidden", !twoStage);
+  $("serviceTwoStageOptions").classList.toggle("hidden", !twoStage);
+  $("serviceLaborRatioField").classList.toggle("hidden", kind !== "program");
+  $("serviceProgramChecks").classList.toggle("hidden", kind !== "program");
+  $("serviceProposalScore").value = kind === "program" ? "85" : "80";
+  $("serviceTieBreak").value = kind === "program"
+    ? "제안서 평가점수 높은 업체 우선, 제안서 점수도 같으면 전자조달시스템 자동추첨"
+    : "";
   $("serviceStatutory").checked = kind === "facility";
 }
 
@@ -898,11 +922,24 @@ function collectServiceDocument() {
   if (mode === "travel") return {
     ...common, destination: detail || "[여행장소 입력 필요]", student_count: Math.trunc(countOne),
     teacher_count: Math.trunc(countTwo), itinerary_text: detailText,
+    proposal_pass_score: Number($("serviceProposalScore").value) || 80,
+    tie_break_method: $("serviceTieBreak").value.trim() || "[학교가 공고 전에 확정: 동일가격 처리기준]",
+    contract_deadline_text: $("serviceContractDeadline").value.trim() || "[학교가 공고에서 정한 계약체결 기한]",
+    region_limit: $("serviceRegionLimit").value.trim(),
     proposal_evaluation_datetime: schedule, bid_open_datetime: "[입력 필요]"
   };
   if (mode === "program") return {
     ...common, expected_students: Math.trunc(countOne), program_count: Math.trunc(countTwo),
     programs_text: detailText, operation_text: schedule,
+    proposal_pass_score: Number($("serviceProposalScore").value) || 85,
+    tie_break_method: $("serviceTieBreak").value.trim() || "제안서 평가점수 높은 업체 우선, 제안서 점수도 같으면 전자조달시스템 자동추첨(학교 공고 전 확정)",
+    contract_deadline_text: $("serviceContractDeadline").value.trim() || "[학교가 공고 전에 확정]",
+    region_limit: $("serviceRegionLimit").value.trim(),
+    labor_cost_ratio_percent: optionalNumber("serviceLaborRatio"),
+    material_cost_separate: $("serviceMaterialSeparate").checked,
+    actual_settlement: $("serviceActualSettlement").checked,
+    electronic_contract: $("serviceElectronicContract").checked,
+    joint_supply_allowed: $("serviceJointSupply").checked,
     proposal_evaluation_datetime: "[입력 필요]", bid_open_datetime: "[입력 필요]"
   };
   if (mode === "facility") return {
