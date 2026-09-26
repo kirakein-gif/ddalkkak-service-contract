@@ -282,3 +282,48 @@ def test_launcher_and_workspace_pages() -> None:
     assert "serviceDomain" in workspace.text
     assert "transportMode" in workspace.text
     assert "URLSearchParams" in workspace.text
+
+
+
+def test_goods_category_profile_is_returned() -> None:
+    payload = {
+        "school_name": "○○중학교",
+        "item_name": "2027학년도 학교급식 우유 구매",
+        "goods_category": "MILK",
+        "estimated_price": 30000000,
+        "planned_date": "2026-09-26",
+        "delivery_date": "2027-03-15",
+    }
+    response = client.post("/api/evaluate/goods", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["profile"]["code"] == "MILK"
+    assert body["profile"]["default_unit_price_contract"] is True
+    assert any("단가계약" in item for item in body["checks"])
+
+
+def test_works_school_type_recommends_industry() -> None:
+    payload = {
+        "school_name": "○○초등학교",
+        "work_name": "교실 바닥 교체공사",
+        "school_work_type": "INTERIOR",
+        "estimated_price": 80000000,
+        "planned_date": "2026-09-26",
+        "location": "본관 2층",
+        "completion_days": 30,
+    }
+    response = client.post("/api/documents/works/preview", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["profile"]["recommended_industry"] == "실내건축공사업"
+    assert body["profile"]["recommended_main_field"] == "실내건축공사"
+    assert "실내건축공사업" in body["documents"][0]["content"]
+
+
+def test_catalog_endpoints_return_school_types() -> None:
+    works = client.get("/api/catalog/works")
+    goods = client.get("/api/catalog/goods?planned_date=2026-09-26")
+    assert works.status_code == 200
+    assert goods.status_code == 200
+    assert any(item["code"] == "ELECTRICAL" for item in works.json())
+    assert any(item["code"] == "FOOD_INGREDIENTS" for item in goods.json())

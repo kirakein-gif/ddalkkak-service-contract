@@ -6,7 +6,9 @@ from app.documents.formats import build_hwpx_zip
 from app.documents.goods_docs import GoodsDocumentData, build_goods_documents
 from app.documents.works_docs import WorksDocumentData, build_works_documents
 from app.rules.goods import GoodsInput, GoodsRoute, evaluate_goods
+from app.rules.goods_catalog import GoodsCategory, get_goods_profile
 from app.rules.works import WorksInput, WorksRoute, WorksType, evaluate_works
+from app.rules.works_catalog import SchoolWorkType, get_works_profile
 
 
 def test_goods_small_value_routes():
@@ -71,3 +73,29 @@ def test_goods_and_works_generate_openable_hwpx_sets():
         with ZipFile(BytesIO(build_hwpx_zip(docs))) as archive:
             assert len(archive.namelist()) == 4
             assert all(name.endswith(".hwpx") for name in archive.namelist())
+
+
+
+def test_school_works_catalog_maps_to_legal_trade():
+    interior = get_works_profile(SchoolWorkType.INTERIOR)
+    electrical = get_works_profile(SchoolWorkType.ELECTRICAL)
+    waterproof = get_works_profile(SchoolWorkType.WET_WATERPROOF)
+
+    assert interior.works_type == WorksType.SPECIALIZED
+    assert interior.recommended_industry == "실내건축공사업"
+    assert interior.recommended_main_field == "실내건축공사"
+    assert electrical.works_type == WorksType.OTHER
+    assert electrical.recommended_industry == "전기공사업"
+    assert waterproof.recommended_main_field == "습식·방수공사"
+
+
+def test_goods_catalog_has_school_specific_purchase_profiles():
+    food = get_goods_profile(GoodsCategory.FOOD_INGREDIENTS, date(2026, 9, 26))
+    milk = get_goods_profile(GoodsCategory.MILK, date(2026, 9, 26))
+    books = get_goods_profile(GoodsCategory.BOOKS, date(2026, 9, 26))
+    uniform = get_goods_profile(GoodsCategory.UNIFORM, date(2026, 9, 26))
+
+    assert any("입찰참가 제한" in item for item in food.checks)
+    assert milk.default_unit_price_contract is True
+    assert books.default_publication is True
+    assert uniform.requires_two_stage is True

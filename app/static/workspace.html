@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL CONTRACT</div>
     <h1>딸깍 계약업무</h1>
     <p class="desc">학교 공사·물품·용역의 계약방법을 검토하고 유형별 공고문과 계약문서를 자동 생성합니다.</p>
-    <span class="version">v0.12 · 공사·물품·용역 트리 구조</span>
+    <span class="version">v0.13 · 공사·물품 유형 세분화</span>
   </section>
 
   <section class="panel">
@@ -266,11 +266,27 @@
 
 
     <div id="goodsFields" class="subpanel hidden">
-      <div class="grid3">
+      <div class="grid4">
         <div class="field"><label for="goodsSchoolName">학교명</label><input id="goodsSchoolName" value="○○초등학교"></div>
+        <div class="field">
+          <label for="goodsCategory">물품유형</label>
+          <select id="goodsCategory">
+            <option value="GENERAL_OFFICE">일반 사무용품</option>
+            <option value="FURNITURE">가구·집기</option>
+            <option value="IT_EQUIPMENT">컴퓨터·정보화기기</option>
+            <option value="EDUCATIONAL_EQUIPMENT">교육·실험기자재</option>
+            <option value="KITCHEN_EQUIPMENT">급식기구·주방기기</option>
+            <option value="FOOD_INGREDIENTS">학교급식 식재료</option>
+            <option value="MILK">학교급식 우유</option>
+            <option value="BOOKS">도서·간행물</option>
+            <option value="UNIFORM">교복·체육복</option>
+            <option value="OTHER">기타 물품</option>
+          </select>
+        </div>
         <div class="field"><label for="goodsDeliveryDate">납품기한</label><input id="goodsDeliveryDate" type="date" value="2027-03-15"></div>
         <div class="field"><label for="goodsBaseAmount">기초금액(원)</label><input id="goodsBaseAmount" type="number" min="1"></div>
       </div>
+      <div id="goodsCategoryHint" class="hint" style="margin:10px 0 0">일반 사무용품 · 종합쇼핑몰/MAS 여부도 함께 확인합니다.</div>
       <div class="grid3" style="margin-top:12px">
         <div class="field"><label for="goodsBudgetAmount">예산액(원)</label><input id="goodsBudgetAmount" type="number" min="1"></div>
         <div class="field"><label for="goodsNoticeNumber">공고번호</label><input id="goodsNoticeNumber" placeholder="예: ○○초등학교 공고 제2026-00호"></div>
@@ -306,10 +322,30 @@
     </div>
 
     <div id="worksFields" class="subpanel hidden">
-      <div class="grid3">
+      <div class="grid4">
         <div class="field"><label for="worksSchoolName">학교명</label><input id="worksSchoolName" value="○○초등학교"></div>
         <div class="field">
-          <label for="worksType">공사종류</label>
+          <label for="schoolWorkType">학교 공사유형</label>
+          <select id="schoolWorkType">
+            <option value="INTERIOR" selected>교실·특별실 리모델링 / 실내건축</option>
+            <option value="PAINT">도장</option>
+            <option value="WET_WATERPROOF">방수·미장·타일·조적</option>
+            <option value="WINDOW_METAL">창호·금속·캐노피</option>
+            <option value="ROOF_ASSEMBLY">지붕·판금·건축물조립</option>
+            <option value="DEMOLITION_SCAFFOLD">철거·비계</option>
+            <option value="PAVING_EARTH">운동장·포장·토공</option>
+            <option value="WATER_SEWER">급배수·상하수도</option>
+            <option value="LANDSCAPE">조경·놀이시설·외부시설</option>
+            <option value="MECHANICAL">기계설비·냉난방</option>
+            <option value="ELECTRICAL">전기공사</option>
+            <option value="TELECOM">정보통신공사</option>
+            <option value="FIRE">소방시설공사</option>
+            <option value="GENERAL_BUILDING">종합 건축공사</option>
+            <option value="OTHER">기타 공사</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="worksType">법정 공사구분</label>
           <select id="worksType">
             <option value="GENERAL">종합공사</option>
             <option value="SPECIALIZED" selected>전문공사</option>
@@ -318,6 +354,7 @@
         </div>
         <div class="field"><label for="worksBaseAmount">기초금액(원)</label><input id="worksBaseAmount" type="number" min="1"></div>
       </div>
+      <div id="worksTypeHint" class="hint" style="margin:10px 0 0">실내건축공사업 · 주력분야 실내건축공사를 우선 추천합니다. 최종 업종은 설계내역으로 확인하세요.</div>
       <div class="grid3" style="margin-top:12px">
         <div class="field"><label for="worksBudgetAmount">예산액(원)</label><input id="worksBudgetAmount" type="number" min="1"></div>
         <div class="field"><label for="worksNoticeNumber">공고번호</label><input id="worksNoticeNumber" placeholder="예: ○○초등학교 공고 제2026-00호"></div>
@@ -737,10 +774,69 @@ function collectDocumentRequest() {
 }
 
 
+const worksTypeProfiles = {
+  GENERAL_BUILDING: ["GENERAL", "건축공사업", "종합적인 건축공사 · 전문공사 단독 발주 가능 여부를 먼저 확인합니다."],
+  INTERIOR: ["SPECIALIZED", "실내건축공사업", "주력분야: 실내건축공사 · 교실 바닥·천장·벽체·리모델링"],
+  PAINT: ["SPECIALIZED", "도장·습식·방수·석공사업", "주력분야: 도장공사"],
+  WET_WATERPROOF: ["SPECIALIZED", "도장·습식·방수·석공사업", "주력분야: 습식·방수공사 · 옥상방수·미장·타일·조적"],
+  WINDOW_METAL: ["SPECIALIZED", "금속·창호·지붕·건축물조립공사업", "주력분야: 금속구조물·창호·온실공사"],
+  ROOF_ASSEMBLY: ["SPECIALIZED", "금속·창호·지붕·건축물조립공사업", "주력분야: 지붕판금·건축물조립공사"],
+  DEMOLITION_SCAFFOLD: ["SPECIALIZED", "구조물해체·비계공사업", "주력분야: 구조물해체·비계공사"],
+  PAVING_EARTH: ["SPECIALIZED", "지반조성·포장공사업", "주력분야: 토공사 또는 포장공사"],
+  WATER_SEWER: ["SPECIALIZED", "상·하수도설비공사업", "주력분야: 상하수도설비공사"],
+  LANDSCAPE: ["SPECIALIZED", "조경식재·시설물공사업", "주력분야: 조경식재공사 또는 조경시설물설치공사"],
+  MECHANICAL: ["SPECIALIZED", "기계설비·가스공사업", "주력분야: 기계설비공사"],
+  ELECTRICAL: ["OTHER", "전기공사업", "전기공사업법 적용 공사"],
+  TELECOM: ["OTHER", "정보통신공사업", "정보통신공사업법 적용 공사"],
+  FIRE: ["OTHER", "공사범위에 맞는 소방시설공사업", "소방시설공사업법 적용 · 등록종류 확인"],
+  OTHER: ["SPECIALIZED", "", "설계내역의 주된 공종을 기준으로 업종을 직접 확인합니다."]
+};
+
+const goodsCategoryProfiles = {
+  GENERAL_OFFICE: "일반 사무용품 · 종합쇼핑몰/MAS 여부도 함께 확인합니다.",
+  FURNITURE: "가구·집기 · 중기간 경쟁제품·직접생산·MAS 여부를 함께 확인합니다.",
+  IT_EQUIPMENT: "컴퓨터·정보화기기 · 종합쇼핑몰/MAS와 설치·유지보수 분리 여부를 확인합니다.",
+  EDUCATIONAL_EQUIPMENT: "교육·실험기자재 · 안전인증과 성능규격을 확인합니다.",
+  KITCHEN_EQUIPMENT: "급식기구·주방기기 · 배관·전기·가스 설치공사 포함 여부를 먼저 구분합니다.",
+  FOOD_INGREDIENTS: "학교급식 식재료 · 2026.8.20. 이후 식재료 구매계약 참가제한·수의계약 배제 확인이 추가됩니다.",
+  MILK: "학교급식 우유 · 단가계약, 예정수량 변동, 냉장·분할납품 조건을 반영합니다.",
+  BOOKS: "도서·간행물 · 도서정가제와 가격할인 10% 이내 기준을 확인합니다.",
+  UNIFORM: "교복·체육복 · 2단계 규격·가격 동시입찰을 우선 검토합니다.",
+  OTHER: "기타 물품 · 세부품명과 구매방식을 직접 확인합니다."
+};
+
+function applyWorksTypeProfile() {
+  const profile = worksTypeProfiles[$("schoolWorkType").value] || worksTypeProfiles.OTHER;
+  $("worksType").value = profile[0];
+  $("worksIndustry").value = profile[1];
+  $("worksTypeHint").textContent = profile[2] + " · 업종은 자동추천이며 최종 공고 전 확인이 필요합니다.";
+}
+
+function applyGoodsCategoryProfile() {
+  const code = $("goodsCategory").value;
+  $("goodsCategoryHint").textContent = goodsCategoryProfiles[code] || "";
+  if (code === "MILK") {
+    $("goodsUnitPrice").checked = true;
+    $("serviceName").value = "학교급식 우유 구매";
+  } else if (code === "BOOKS") {
+    $("goodsPublication").checked = true;
+    $("serviceName").value = "도서 구매";
+  } else if (code === "UNIFORM") {
+    $("serviceName").value = "교복 학교주관구매";
+  } else if (code === "FOOD_INGREDIENTS") {
+    $("serviceName").value = "학교급식 식재료 구매";
+  }
+}
+
+$("schoolWorkType").onchange = applyWorksTypeProfile;
+$("goodsCategory").onchange = applyGoodsCategoryProfile;
+applyWorksTypeProfile();
+
 function collectGoods() {
   return {
     school_name: $("goodsSchoolName").value.trim() || "○○학교",
     item_name: $("serviceName").value.trim(),
+    goods_category: $("goodsCategory").value,
     estimated_price: Number($("estimatedPrice").value),
     planned_date: $("plannedDate").value,
     base_amount: optionalNumber("goodsBaseAmount"),
@@ -773,6 +869,7 @@ function collectWorks() {
   return {
     school_name: $("worksSchoolName").value.trim() || "○○학교",
     work_name: $("serviceName").value.trim(),
+    school_work_type: $("schoolWorkType").value,
     estimated_price: Number($("estimatedPrice").value),
     works_type: $("worksType").value,
     planned_date: $("plannedDate").value,
@@ -818,13 +915,13 @@ function pct(value) {
 
 function renderRule(data) {
   $("method").textContent = data.contract_method;
-  $("routeText").textContent = "판정코드 · " + data.route_code;
+  $("routeText").textContent = "판정코드 · " + data.route_code + (data.profile ? " · " + data.profile.label : "");
   $("status").textContent = data.status;
   $("designated").textContent = data.designated_system_required ? "원칙적 사용" : "필수 아님";
   $("quoteRate").textContent = pct(data.minimum_quote_rate);
   $("qualification").textContent = data.qualification_score ? data.qualification_score + "점 이상" : "해당/별도 검토";
   $("childBus").textContent = data.child_school_bus_status || "해당 없음";
-  $("industry").textContent = data.required_industry_registration || "업무유형별 확인";
+  $("industry").textContent = data.required_industry_registration || (data.profile && data.profile.recommended_industry) || "업무유형별 확인";
   $("regionRule").textContent = data.regional_restriction_status || data.small_business_restriction || "별도 확인";
   $("serviceItemResult").textContent = data.service_item_code ? (data.service_item_name + " (" + data.service_item_code + ")") : "해당 없음/미정";
   $("directProduction").textContent = data.direct_production_status || "해당 없음";

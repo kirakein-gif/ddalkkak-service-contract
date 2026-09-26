@@ -40,6 +40,9 @@ class GoodsDocumentData:
     contact_phone: str = ""
     joint_supply_allowed: bool = False
     rebid_allowed: bool = True
+    category_label: str = "일반 물품"
+    purchase_method_hint: str = ""
+    category_checks: tuple[str, ...] = ()
 
 
 def _money(value: int | None) -> str:
@@ -132,6 +135,8 @@ def build_goods_documents(data: GoodsDocumentData, rule: GoodsResult) -> list[Ge
 ※ 면세사업자도 부가가치세를 포함한 금액으로 투찰하며, 계약상대자가 면세사업자인 경우 계약금액에서 부가가치세 상당액을 차감하여 계약금액을 결정합니다.
 
 ## 2. 견적제출 및 계약방식
+- 물품유형: {data.category_label}
+- 유형별 구매검토: {data.purchase_method_hint or '일반 물품계약'}
 - 계약방법: {rule.contract_method}
 - 제출방법: {electronic}
 - {'전자계약, 청렴계약제 시행 대상입니다.' if rule.route_code != GoodsRoute.ONE_PERSON else '계약 체결 시 청렴계약 관련 서류를 확인합니다.'}
@@ -176,7 +181,10 @@ def build_goods_documents(data: GoodsDocumentData, rule: GoodsResult) -> list[Ge
 - 납품 후 검사·검수를 실시하며 규격·수량·품질 미달 시 교환·보완을 요구할 수 있습니다.
 - 하자·A/S 조건: {data.warranty_text}
 
-## 12. 기타사항 및 문의
+## 12. 품목유형별 추가 확인사항
+{chr(10).join(f'- {item}' for item in data.category_checks) if data.category_checks else '- 별도 추가 확인사항 없음'}
+
+## 13. 기타사항 및 문의
 - 공고문과 개찰결과는 국가종합전자조달시스템에서 확인합니다.
 - 전자입찰 시스템 문의: 정부조달 콜센터 1588-0800
 - 계약담당자: {_value(data.contact_name)}
@@ -234,6 +242,7 @@ def build_goods_documents(data: GoodsDocumentData, rule: GoodsResult) -> list[Ge
 
     summary = (
         ("건 명", data.item_name, "", ""),
+        ("물품유형", data.category_label, "구매검토", data.purchase_method_hint or "일반 물품계약"),
         ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
         ("규격·수량", data.quantity_text, "납품기한", data.delivery_date.isoformat()),
         ("전자견적서 제출기간", f"{data.bid_start} ~ {data.bid_end}" if rule.route_code != GoodsRoute.ONE_PERSON else "[입력 필요]", "", ""),

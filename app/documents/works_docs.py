@@ -26,6 +26,8 @@ class WorksDocumentData:
     budget_amount: int | None = None
     scope_text: str = "[공사범위 입력 필요]"
     required_industry: str = ""
+    school_work_type_label: str = "기타 공사"
+    recommended_main_field: str = ""
     design_summary: str = "[설계·내역 요약 입력 필요]"
     safety_text: str = "산업안전보건법 등 관계법령에 따른 안전조치"
     notice_number: str = ""
@@ -112,6 +114,8 @@ def build_works_documents(data: WorksDocumentData, rule: WorksResult) -> list[Ge
 - 공동수급: {'허용' if data.joint_supply_allowed else '불허'}
 
 ## 2. 견적제출·입찰 및 계약방식
+- 학교 공사유형: {data.school_work_type_label}
+- 추천 업종·주력분야: {data.required_industry}{f' / {data.recommended_main_field}' if data.recommended_main_field else ''}
 - 계약방법: {rule.contract_method}
 - 전자견적·입찰: {'국가종합전자조달시스템(G2B) 적용' if rule.route_code != WorksRoute.ONE_PERSON else '학교가 정한 방법'}
 - 전자계약, 청렴계약제 시행 대상입니다.
@@ -243,6 +247,7 @@ def build_works_documents(data: WorksDocumentData, rule: WorksResult) -> list[Ge
 
     summary = (
         ("공 사 명", data.work_name, "", ""),
+        ("학교 공사유형", data.school_work_type_label, "추천 주력분야", data.recommended_main_field or "별도 확인"),
         ("공사현장", data.location, "공사기간", f"착공일부터 {data.completion_days}일"),
         ("기초금액", _money(data.base_amount), "추정가격", _money(data.estimated_price)),
         ("A 값", _money(data.a_value_total), "요구업종", _value(data.required_industry)),

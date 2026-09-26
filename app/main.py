@@ -28,7 +28,9 @@ from app.documents.transport_docs import (
     build_transport_hwpx_zip,
 )
 from app.rules.goods import GoodsInput, evaluate_goods
+from app.rules.goods_catalog import GoodsCategory, get_goods_profile, list_goods_profiles
 from app.rules.works import WorksInput, WorksType, evaluate_works
+from app.rules.works_catalog import SchoolWorkType, get_works_profile, list_works_profiles
 from app.rules.simple_labor import evaluate_simple_labor
 from app.rules.two_stage import TwoStageInput, TwoStageMethod, evaluate_two_stage
 from app.rules.engine import (
@@ -57,7 +59,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 계약업무",
     description="학교 공사·용역·물품 계약업무 지원 웹도구",
-    version="0.12.0",
+    version="0.13.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -108,6 +110,7 @@ class TransportQualificationRequest(BaseModel):
 class GoodsRequest(BaseModel):
     school_name: str = Field(min_length=1, max_length=100)
     item_name: str = Field(min_length=1, max_length=200)
+    goods_category: GoodsCategory = GoodsCategory.GENERAL_OFFICE
     estimated_price: int = Field(gt=0)
     planned_date: date = date(2026, 7, 1)
     base_amount: int | None = Field(default=None, gt=0)
@@ -138,8 +141,9 @@ class GoodsRequest(BaseModel):
 class WorksRequest(BaseModel):
     school_name: str = Field(min_length=1, max_length=100)
     work_name: str = Field(min_length=1, max_length=200)
+    school_work_type: SchoolWorkType = SchoolWorkType.OTHER
     estimated_price: int = Field(gt=0)
-    works_type: WorksType
+    works_type: WorksType = WorksType.SPECIALIZED
     planned_date: date = date(2026, 7, 1)
     base_amount: int | None = Field(default=None, gt=0)
     budget_amount: int | None = Field(default=None, gt=0)
@@ -356,7 +360,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.12.0",
+        "version": "0.13.0",
     }
 
 
@@ -428,24 +432,14 @@ def calculate_school_transport_qualification(
 
 
 
-@app.post("/api/evaluate/goods")
-def evaluate_goods_contract(request: GoodsRequest) -> dict:
-    result = evaluate_goods(
-        GoodsInput(
-            item_name=request.item_name,
-            estimated_price=request.estimated_price,
-            planned_date=request.planned_date,
-            is_sme_competition_product=request.is_sme_competition_product,
-            direct_production_applicable=request.direct_production_applicable,
-            is_publication=request.is_publication,
-            unit_price_contract=request.unit_price_contract,
-        )
-    )
-    return jsonable_encoder(asdict(result))
+def _append_unique(target: list[str], values) -> None:
+    for value in values:
+        if value and value not in target:
+            target.append(value)
 
 
-@app.post("/api/documents/goods/preview")
-def preview_goods_documents(request: GoodsRequest) -> dict:
+def _goods_rule_and_profile(request: GoodsRequest):
+    profile = get_goods_profile(request.goods_category, request.planned_date)
     rule = evaluate_goods(
         GoodsInput(
             item_name=request.item_name,
@@ -453,10 +447,67 @@ def preview_goods_documents(request: GoodsRequest) -> dict:
             planned_date=request.planned_date,
             is_sme_competition_product=request.is_sme_competition_product,
             direct_production_applicable=request.direct_production_applicable,
-            is_publication=request.is_publication,
-            unit_price_contract=request.unit_price_contract,
+            is_publication=request.is_publication or profile.default_publication,
+            unit_price_contract=request.unit_price_contract or profile.default_unit_price_contract,
         )
     )
+    _append_unique(rule.legal_bases, profile.legal_bases)
+    _append_unique(rule.checks, profile.checks)
+    _append_unique(rule.warnings, profile.warnings)
+    if profile.recommend_mas_check:
+        _append_unique(rule.checks, ("나라장터 종합쇼핑몰·MAS·제3자단가계약 활용 가능 여부 확인",))
+    if profile.requires_two_stage:
+        _append_unique(
+            rule.warnings,
+            ("이 품목유형은 2단계 규격·가격 동시입찰 전용 절차를 우선 검토해야 하며 일반 물품공고를 그대로 사용하면 안 됩니다.",),
+        )
+    return rule, profile
+
+
+def _works_rule_profile_and_values(request: WorksRequest):
+    profile = get_works_profile(request.school_work_type)
+    works_type = profile.works_type if request.school_work_type != SchoolWorkType.OTHER else request.works_type
+    industry = request.required_industry.strip() or profile.recommended_industry
+    rule = evaluate_works(
+        WorksInput(
+            work_name=request.work_name,
+            estimated_price=request.estimated_price,
+            works_type=works_type,
+            planned_date=request.planned_date,
+            required_industry=industry,
+            region_restriction_requested=request.region_restriction_requested,
+        )
+    )
+    _append_unique(rule.legal_bases, profile.legal_bases)
+    profile_checks = list(profile.checks)
+    if profile.recommended_main_field:
+        profile_checks.insert(0, f"추천 주력분야: {profile.recommended_main_field}")
+    _append_unique(rule.checks, profile_checks)
+    _append_unique(rule.warnings, profile.warnings)
+    return rule, profile, works_type, industry
+
+
+@app.get("/api/catalog/goods")
+def get_goods_catalog(planned_date: date | None = None) -> list[dict]:
+    return jsonable_encoder([asdict(item) for item in list_goods_profiles(planned_date)])
+
+
+@app.get("/api/catalog/works")
+def get_works_catalog() -> list[dict]:
+    return jsonable_encoder([asdict(item) for item in list_works_profiles()])
+
+
+@app.post("/api/evaluate/goods")
+def evaluate_goods_contract(request: GoodsRequest) -> dict:
+    rule, profile = _goods_rule_and_profile(request)
+    result = jsonable_encoder(asdict(rule))
+    result["profile"] = jsonable_encoder(asdict(profile))
+    return result
+
+
+@app.post("/api/documents/goods/preview")
+def preview_goods_documents(request: GoodsRequest) -> dict:
+    rule, profile = _goods_rule_and_profile(request)
     documents = build_goods_documents(
         GoodsDocumentData(
             school_name=request.school_name,
@@ -483,28 +534,21 @@ def preview_goods_documents(request: GoodsRequest) -> dict:
             contact_phone=request.contact_phone,
             joint_supply_allowed=request.joint_supply_allowed,
             rebid_allowed=request.rebid_allowed,
+            category_label=profile.label,
+            purchase_method_hint=profile.purchase_method_hint,
+            category_checks=profile.checks,
         ),
         rule,
     )
     result = _documents_preview(documents)
     result["rule"] = jsonable_encoder(asdict(rule))
+    result["profile"] = jsonable_encoder(asdict(profile))
     return result
 
 
 @app.post("/api/documents/goods/package-hwpx")
 def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
-    preview = preview_goods_documents(request)
-    rule = evaluate_goods(
-        GoodsInput(
-            item_name=request.item_name,
-            estimated_price=request.estimated_price,
-            planned_date=request.planned_date,
-            is_sme_competition_product=request.is_sme_competition_product,
-            direct_production_applicable=request.direct_production_applicable,
-            is_publication=request.is_publication,
-            unit_price_contract=request.unit_price_contract,
-        )
-    )
+    rule, profile = _goods_rule_and_profile(request)
     documents = build_goods_documents(
         GoodsDocumentData(
             school_name=request.school_name,
@@ -531,6 +575,9 @@ def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
             contact_phone=request.contact_phone,
             joint_supply_allowed=request.joint_supply_allowed,
             rebid_allowed=request.rebid_allowed,
+            category_label=profile.label,
+            purchase_method_hint=profile.purchase_method_hint,
+            category_checks=profile.checks,
         ),
         rule,
     )
@@ -539,31 +586,15 @@ def package_goods_documents(request: GoodsRequest) -> StreamingResponse:
 
 @app.post("/api/evaluate/works")
 def evaluate_works_contract(request: WorksRequest) -> dict:
-    result = evaluate_works(
-        WorksInput(
-            work_name=request.work_name,
-            estimated_price=request.estimated_price,
-            works_type=request.works_type,
-            planned_date=request.planned_date,
-            required_industry=request.required_industry,
-            region_restriction_requested=request.region_restriction_requested,
-        )
-    )
-    return jsonable_encoder(asdict(result))
+    rule, profile, _, _ = _works_rule_profile_and_values(request)
+    result = jsonable_encoder(asdict(rule))
+    result["profile"] = jsonable_encoder(asdict(profile))
+    return result
 
 
 @app.post("/api/documents/works/preview")
 def preview_works_documents(request: WorksRequest) -> dict:
-    rule = evaluate_works(
-        WorksInput(
-            work_name=request.work_name,
-            estimated_price=request.estimated_price,
-            works_type=request.works_type,
-            planned_date=request.planned_date,
-            required_industry=request.required_industry,
-            region_restriction_requested=request.region_restriction_requested,
-        )
-    )
+    rule, profile, _, industry = _works_rule_profile_and_values(request)
     documents = build_works_documents(
         WorksDocumentData(
             school_name=request.school_name,
@@ -575,7 +606,9 @@ def preview_works_documents(request: WorksRequest) -> dict:
             base_amount=request.base_amount,
             budget_amount=request.budget_amount,
             scope_text=request.scope_text,
-            required_industry=request.required_industry,
+            required_industry=industry,
+            school_work_type_label=profile.label,
+            recommended_main_field=profile.recommended_main_field,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
             notice_number=request.notice_number,
@@ -596,21 +629,13 @@ def preview_works_documents(request: WorksRequest) -> dict:
     )
     result = _documents_preview(documents)
     result["rule"] = jsonable_encoder(asdict(rule))
+    result["profile"] = jsonable_encoder(asdict(profile))
     return result
 
 
 @app.post("/api/documents/works/package-hwpx")
 def package_works_documents(request: WorksRequest) -> StreamingResponse:
-    rule = evaluate_works(
-        WorksInput(
-            work_name=request.work_name,
-            estimated_price=request.estimated_price,
-            works_type=request.works_type,
-            planned_date=request.planned_date,
-            required_industry=request.required_industry,
-            region_restriction_requested=request.region_restriction_requested,
-        )
-    )
+    rule, profile, _, industry = _works_rule_profile_and_values(request)
     documents = build_works_documents(
         WorksDocumentData(
             school_name=request.school_name,
@@ -622,7 +647,9 @@ def package_works_documents(request: WorksRequest) -> StreamingResponse:
             base_amount=request.base_amount,
             budget_amount=request.budget_amount,
             scope_text=request.scope_text,
-            required_industry=request.required_industry,
+            required_industry=industry,
+            school_work_type_label=profile.label,
+            recommended_main_field=profile.recommended_main_field,
             design_summary=request.design_summary,
             safety_text=request.safety_text,
             notice_number=request.notice_number,
