@@ -75,6 +75,7 @@ class TransportEvaluateRequest(BaseModel):
 
 class TransportQualificationRequest(BaseModel):
     estimated_price: int = Field(gt=0, lt=500_000_000)
+    planned_date: date = date(2026, 7, 27)
     expected_price: int = Field(gt=0)
     bid_price: int = Field(gt=0)
     performance_base_amount: int = Field(gt=0)
@@ -217,6 +218,7 @@ def calculate_school_transport_qualification(
     result = calculate_transport_qualification(
         QualificationInput(
             estimated_price=request.estimated_price,
+            planned_date=request.planned_date,
             expected_price=request.expected_price,
             bid_price=request.bid_price,
             performance_base_amount=request.performance_base_amount,
