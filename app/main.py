@@ -15,6 +15,7 @@ from app.documents.transport_docs import (
     TransportDocumentData,
     build_transport_documents,
     build_transport_docx_zip,
+    build_transport_hwpx_zip,
 )
 from app.rules.engine import (
     ContractInput,
@@ -41,7 +42,7 @@ STATIC_DIR = BASE_DIR / "static"
 app = FastAPI(
     title="딸깍 용역계약",
     description="학교 용역 계약업무 지원 웹도구",
-    version="0.5.0",
+    version="0.6.0",
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -184,7 +185,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "ddalkkak-service-contract",
-        "version": "0.5.0",
+        "version": "0.6.0",
     }
 
 
@@ -245,6 +246,24 @@ def preview_transport_documents(request: TransportDocumentRequest) -> dict:
             for doc in documents
         ],
     }
+
+
+@app.post("/api/documents/transport/package-hwpx")
+def package_transport_hwpx_documents(
+    request: TransportDocumentRequest,
+) -> StreamingResponse:
+    rule = evaluate_transport(_to_transport_input(request))
+    data = _build_document_data(request, rule)
+    documents = build_transport_documents(data, rule)
+    payload = build_transport_hwpx_zip(documents)
+    headers = {
+        "Content-Disposition": 'attachment; filename="ddalkkak_transport_hwpx.zip"'
+    }
+    return StreamingResponse(
+        BytesIO(payload),
+        media_type="application/zip",
+        headers=headers,
+    )
 
 
 @app.post("/api/documents/transport/package")
