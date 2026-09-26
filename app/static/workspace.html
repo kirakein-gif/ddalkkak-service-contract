@@ -140,7 +140,7 @@
     <div class="brand">DDALKKAK · SCHOOL CONTRACT</div>
     <h1>딸깍 계약업무</h1>
     <p class="desc">학교 공사·물품·용역의 계약방법을 검토하고 유형별 공고문과 계약문서를 자동 생성합니다.</p>
-    <span class="version">v0.16 · 충남 방과후·늘봄 공고표본 반영</span>
+    <span class="version">v0.17 · 충남 통학차량 공고표본 반영</span>
   </section>
 
   <section class="panel">
@@ -501,6 +501,19 @@
 
     <div class="checks" style="margin-top:12px">
       <label class="check"><input id="directVehicle" type="checkbox">회사 소유·직영차량 조건을 문서에 반영</label>
+      <label class="check"><input id="transportJointSupply" type="checkbox">공동수급 허용</label>
+      <label class="check"><input id="transportMinWagePledge" type="checkbox" checked>최저임금·근로조건 이행확약 검토</label>
+    </div>
+
+    <div class="grid3" style="margin-top:12px">
+      <div class="field"><label for="transportEqualPrice">동일가격 처리기준</label><input id="transportEqualPrice" placeholder="비워두면 계약유형별 기본문구 적용"></div>
+      <div class="field"><label for="transportQualDeadline">적격심사 서류제출기한</label><input id="transportQualDeadline" placeholder="예: 대상통보 후 5일 이내"></div>
+      <div class="field"><label for="transportContractDeadline">계약체결 기한</label><input id="transportContractDeadline" placeholder="예: 통보 후 10일 이내"></div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label for="transportInsuranceSettlement">사회보험료 사후정산 조건</label>
+      <input id="transportInsuranceSettlement" placeholder="예: 원가계산서 계상 국민연금·건강보험·장기요양보험료를 관련 규정에 따라 사후정산">
     </div>
 
     <div class="field" style="margin-top:12px">
@@ -840,6 +853,12 @@ function collectDocumentRequest() {
     bid_open: $("bidOpen").value.trim(),
     vehicle_year_condition: $("vehicleYearCondition").value.trim(),
     direct_vehicle_required: $("directVehicle").checked,
+    joint_supply_allowed: $("transportJointSupply").checked,
+    equal_price_method: $("transportEqualPrice").value.trim(),
+    qualification_document_deadline_text: $("transportQualDeadline").value.trim() || "[적격심사 대상 통보 후 공고에서 정한 기한]",
+    contract_deadline_text: $("transportContractDeadline").value.trim() || "[계약상대자 결정 후 공고에서 정한 기한]",
+    minimum_wage_pledge_required: $("transportMinWagePledge").checked,
+    social_insurance_settlement_text: $("transportInsuranceSettlement").value.trim() || "[해당 시 원가계산서 계상금액 및 사후정산 적용 여부 확인]",
     extra_notes: $("extraNotes").value.trim(),
     routes: collectRoutes()
   };
